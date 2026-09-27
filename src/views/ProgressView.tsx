@@ -67,57 +67,6 @@ export const ProgressView: React.FC = () => {
         </p>
       </div>
 
-      {/* Section Ton parcours */}
-      <div className="space-y-3">
-        <h2 className="text-base font-bold text-[#123C2A] dark:text-white px-0.5">
-          Ton parcours
-        </h2>
-
-        <div className="space-y-3.5">
-          {[
-            {
-              step: '1 · Les bases',
-              desc: 'Fractions, puissances et gestes essentiels.',
-              category: 'fractions_puissances'
-            },
-            {
-              step: '2 · Les exercices',
-              desc: 'Équations, trigonométrie et tableaux.',
-              category: 'equations'
-            },
-            {
-              step: '3 · Les modes spécialisés',
-              desc: 'Statistiques, complexes et autres modes.',
-              category: 'statistiques'
-            },
-            {
-              step: '4 · Pour aller plus loin',
-              desc: 'Fonctions scientifiques et limites du modèle.',
-              category: 'constantes_conversions'
-            }
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              onClick={() => setActiveTab('explorer')}
-              className="flex items-start gap-3 cursor-pointer group select-none"
-            >
-              {/* Puce circulaire double conforme à la capture */}
-              <div className="mt-1 w-4 h-4 rounded-full border-2 border-[#8EA397] dark:border-[#3A5649] flex items-center justify-center shrink-0">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#8EA397] dark:bg-[#3A5649]" />
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-[#123C2A] dark:text-white group-hover:text-[#185339] dark:group-hover:text-[#57B88A] transition-colors">
-                  {item.step}
-                </div>
-                <div className="text-xs text-[#5A7365] dark:text-[#8EA397]">
-                  {item.desc}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Section Récemment consultées */}
       <div className="space-y-3">
         <h2 className="text-base font-bold text-[#123C2A] dark:text-white px-0.5">

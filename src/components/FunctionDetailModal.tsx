@@ -5,7 +5,7 @@ import { KeyBadge } from './KeyBadge';
 import { LcdScreen } from './LcdScreen';
 import {
   X,
-  Bookmark,
+  Heart,
   CheckCircle2,
   AlertTriangle,
   Lightbulb,
@@ -59,9 +59,9 @@ export const FunctionDetailModal: React.FC<FunctionDetailModalProps> = ({ item, 
               className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-[#63736B] dark:text-[#B7C5BE] hover:bg-[#EEF2ED] dark:hover:bg-[#1D3028] transition-colors"
               aria-label={bookmarked ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             >
-              <Bookmark
+              <Heart
                 className={`w-5 h-5 ${
-                  bookmarked ? 'fill-[#123C2A] text-[#123C2A] dark:fill-[#B8E86A] dark:text-[#B8E86A]' : ''
+                  bookmarked ? 'fill-[#DC2626] text-[#DC2626] dark:fill-[#58D68D] dark:text-[#58D68D]' : ''
                 }`}
               />
             </button>

@@ -1,149 +1,176 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { FX991ES_DATABASE } from '../data/fx991esDatabase';
 import { FunctionCategory } from '../types';
-import { FunctionCard } from '../components/FunctionCard';
-import { Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { LayoutGrid, ArrowUpRight } from 'lucide-react';
 
 export const ExplorerView: React.FC = () => {
-  const { openFunctionDetail, selectedCategory, setSelectedCategory } = useApp();
-  const [search, setSearch] = useState('');
-  const [levelFilter, setLevelFilter] = useState<'all' | 'Essentiel' | 'Intermédiaire' | 'Avancé'>('all');
+  const { openFunctionDetail, selectedCategory, setSelectedCategory, setActiveTab } = useApp();
 
-  const categories: { id: FunctionCategory | 'all'; label: string }[] = [
+  const categoryPills: { id: FunctionCategory | 'all'; label: string }[] = [
     { id: 'all', label: 'Toutes' },
-    { id: 'equations', label: 'Équations (EQN)' },
-    { id: 'fonctions_analyse', label: 'Analyse & Dérivées' },
+    { id: 'equations', label: 'Équations' },
+    { id: 'fonctions_analyse', label: 'Fonctions' },
     { id: 'trigonometrie', label: 'Trigonométrie' },
     { id: 'statistiques', label: 'Statistiques' },
     { id: 'geometrie_vecteurs', label: 'Vecteurs' },
-    { id: 'nombres_complexes', label: 'Complexes' },
     { id: 'matrices', label: 'Matrices' },
+    { id: 'nombres_complexes', label: 'Complexes' },
     { id: 'fractions_puissances', label: 'Fractions' },
-    { id: 'constantes_conversions', label: 'Constantes & Conv.' },
-    { id: 'memoires_variables', label: 'Mémoires' }
+    { id: 'memoires_variables', label: 'Mémoires' },
+    { id: 'constantes_conversions', label: 'Constantes' }
   ];
+
+  const getCategoryShortName = (cat: FunctionCategory) => {
+    switch (cat) {
+      case 'equations':
+        return 'ÉQUATIONS';
+      case 'fonctions_analyse':
+        return 'FONCTIONS';
+      case 'trigonometrie':
+        return 'TRIGONOMÉTRIE';
+      case 'statistiques':
+        return 'STATISTIQUES';
+      case 'geometrie_vecteurs':
+        return 'VECTEURS';
+      case 'matrices':
+        return 'MATRICES';
+      case 'nombres_complexes':
+        return 'COMPLEXES';
+      case 'fractions_puissances':
+        return 'FRACTIONS';
+      case 'memoires_variables':
+        return 'MÉMOIRES';
+      case 'constantes_conversions':
+        return 'CONSTANTES';
+      default:
+        return 'GÉNÉRAL';
+    }
+  };
 
   const filteredItems = useMemo(() => {
     return FX991ES_DATABASE.filter(item => {
-      // Category filter
       if (selectedCategory !== 'all' && item.categorie !== selectedCategory) {
         return false;
       }
-      // Level filter
-      if (levelFilter !== 'all' && item.niveau !== levelFilter) {
-        return false;
-      }
-      // Search query
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        const matches =
-          item.nom.toLowerCase().includes(q) ||
-          item.description.toLowerCase().includes(q) ||
-          item.motsClesRecherche.some(k => k.toLowerCase().includes(q)) ||
-          item.modeCasio.toLowerCase().includes(q);
-        if (!matches) return false;
-      }
       return true;
     });
-  }, [selectedCategory, levelFilter, search]);
+  }, [selectedCategory]);
 
   return (
-    <div className="space-y-4 pb-20">
-      {/* Title */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-[#173126] dark:text-[#F0F4EF]">
-          Explorateur des fonctions
-        </h1>
-        <p className="text-xs text-[#63736B] dark:text-[#B7C5BE] mt-0.5">
-          Toutes les fonctionnalités vérifiées de la Casio fx-991ES originale.
+    <div className="space-y-4 pb-24 animate-in fade-in duration-150">
+      {/* A. En-tête (Header Capture 1) */}
+      <div className="flex items-start justify-between gap-3 pt-1">
+        <div>
+          <div className="text-[11px] font-mono tracking-wider uppercase text-[#7A8C82] dark:text-[#8EA397]">
+            LA FX-991ES, FONCTION PAR FONCTION
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#123C2A] dark:text-white mt-0.5">
+            Explorer
+          </h1>
+        </div>
+
+        {/* Bouton d'action carré arrondi avec icône grille à 4 carrés qui ouvre "Les touches" */}
+        <button
+          onClick={() => setActiveTab('keypad')}
+          aria-label="Repérer les touches de la calculatrice"
+          className="w-10 h-10 rounded-xl bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-[#58D68D] hover:bg-[#EEF4F0] dark:hover:bg-[#193A2E] active:scale-95 transition-all shadow-xs shrink-0"
+        >
+          <LayoutGrid className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* B. Carte d'Introduction (Banner Capture 1) */}
+      <div className="bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl p-4 sm:p-5 shadow-xs space-y-1.5">
+        <h2 className="text-base sm:text-lg font-bold text-[#123C2A] dark:text-white leading-snug">
+          Une calculatrice. Plusieurs modes.
+        </h2>
+        <p className="text-xs sm:text-sm text-[#5A7365] dark:text-[#8EA397] leading-relaxed">
+          Parcours les fonctions par thème. Chaque fiche indique clairement si la procédure est vérifiée.
         </p>
       </div>
 
-      {/* Search Input */}
-      <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C9892] dark:text-[#879890]" />
-        <input
-          type="search"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Filtrer par nom, touche ou mode..."
-          className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm bg-white dark:bg-[#1D3028] text-[#173126] dark:text-[#F0F4EF] placeholder-[#8C9892] dark:placeholder-[#879890] rounded-xl border border-[#E2E8E3] dark:border-[#2C4439] focus:outline-none focus:border-[#123C2A] dark:focus:border-[#6FAF82]"
-        />
-      </div>
+      {/* C. Filtres « Familles » (Sélecteur Horizontal Capture 1) */}
+      <div className="space-y-2.5 pt-1">
+        <h3 className="text-base font-bold text-[#123C2A] dark:text-white px-0.5">
+          Familles
+        </h3>
 
-      {/* Category Pills Scroller (Interactive filter tabs) */}
-      <div className="overflow-x-auto no-scrollbar -mx-4 px-4 py-1 flex items-center gap-1.5">
-        {categories.map(cat => {
-          const isActive = selectedCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-lg transition-colors shrink-0 ${
-                isActive
-                  ? 'bg-[#123C2A] text-white dark:bg-[#6FAF82] dark:text-[#0E1914] font-semibold'
-                  : 'bg-white dark:bg-[#1D3028] text-[#63736B] dark:text-[#B7C5BE] border border-[#E2E8E3] dark:border-[#2C4439]'
-              }`}
-            >
-              {cat.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Level filter segmented control */}
-      <div className="flex items-center justify-between text-xs text-[#63736B] dark:text-[#B7C5BE] pt-1">
-        <span className="font-mono">{filteredItems.length} fonction(s)</span>
-
-        <div className="flex items-center gap-1 bg-[#EEF2ED] dark:bg-[#1D3028] p-1 rounded-lg border border-[#E2E8E3] dark:border-[#2C4439]">
-          {(['all', 'Essentiel', 'Intermédiaire', 'Avancé'] as const).map(lvl => (
-            <button
-              key={lvl}
-              onClick={() => setLevelFilter(lvl)}
-              className={`px-2 py-0.5 text-[11px] rounded transition-colors ${
-                levelFilter === lvl
-                  ? 'bg-white dark:bg-[#244036] text-[#123C2A] dark:text-[#F0F4EF] font-bold shadow-sm'
-                  : 'text-[#63736B] dark:text-[#879890]'
-              }`}
-            >
-              {lvl === 'all' ? 'Tous' : lvl}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 py-1">
+          {categoryPills.map(cat => {
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${
+                  isSelected
+                    ? 'bg-[#123C2A] text-white dark:bg-[#58D68D] dark:text-[#0B1713] shadow-xs'
+                    : 'bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] text-[#5A7365] dark:text-[#C2D6CC] hover:text-[#123C2A] dark:hover:text-white'
+                }`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* List of Functions */}
-      {filteredItems.length > 0 ? (
+      {/* D. Section « Catalogue fx-991ES » (Capture 1) */}
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center justify-between px-0.5">
+          <h3 className="text-base sm:text-lg font-bold text-[#123C2A] dark:text-white">
+            Catalogue fx-991ES
+          </h3>
+          <span className="text-xs text-[#7A8C82] dark:text-[#8EA397] font-medium font-mono">
+            {filteredItems.length} fiches
+          </span>
+        </div>
+
+        {/* Cartes de fiches verticales (Stack) */}
         <div className="space-y-3">
           {filteredItems.map(item => (
-            <FunctionCard
+            <div
               key={item.id}
-              item={item}
               onClick={() => openFunctionDetail(item)}
-            />
+              className="bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl p-4 space-y-2.5 shadow-xs hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] transition-colors cursor-pointer text-left active:scale-[0.99] group"
+            >
+              {/* En-tête interne : Tag de catégorie en vert + Bouton rond ↗ */}
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono font-bold tracking-wider uppercase text-[#123C2A] dark:text-[#58D68D]">
+                  {getCategoryShortName(item.categorie)}
+                </span>
+
+                <div className="w-8 h-8 rounded-xl bg-[#EEF4F0] dark:bg-[#193A2E] text-[#123C2A] dark:text-[#58D68D] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <ArrowUpRight className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* Titre de la fiche */}
+              <h4 className="text-base font-bold text-[#123C2A] dark:text-white leading-snug">
+                {item.nom}
+              </h4>
+
+              {/* Description courte */}
+              <p className="text-xs text-[#5A7365] dark:text-[#8EA397] leading-relaxed">
+                {item.description}
+              </p>
+
+              {/* Pied de fiche : Badges d’état discrets */}
+              <div className="flex items-center justify-between pt-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EEF4F0] dark:bg-[#18362B] text-xs font-medium text-[#123C2A] dark:text-[#58D68D]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#123C2A] dark:bg-[#58D68D]" />
+                  <span>Procédure vérifiée</span>
+                </div>
+
+                <span className="text-xs text-[#7A8C82] dark:text-[#8EA397] font-medium">
+                  {item.niveau}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
-      ) : (
-        <div className="p-8 text-center bg-white dark:bg-[#1D3028] rounded-2xl border border-[#E2E8E3] dark:border-[#2C4439] space-y-2">
-          <p className="text-sm font-semibold text-[#173126] dark:text-[#F0F4EF]">
-            Aucune fonction ne correspond à ces critères
-          </p>
-          <p className="text-xs text-[#63736B] dark:text-[#B7C5BE]">
-            Essaie de réinitialiser la catégorie ou le niveau.
-          </p>
-          <button
-            onClick={() => {
-              setSelectedCategory('all');
-              setLevelFilter('all');
-              setSearch('');
-            }}
-            className="mt-2 text-xs font-bold text-[#123C2A] dark:text-[#6FAF82] underline"
-          >
-            Réinitialiser les filtres
-          </button>
-        </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -47,9 +47,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('fxguide_favorites');
-      return stored ? JSON.parse(stored) : ['eqn-second-degre', 'derivee-numerique-ddx', 'setup-degre-radian'];
+      return stored ? JSON.parse(stored) : [];
     } catch {
-      return ['eqn-second-degre', 'derivee-numerique-ddx', 'setup-degre-radian'];
+      return [];
     }
   });
 
