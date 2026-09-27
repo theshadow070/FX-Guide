@@ -255,7 +255,69 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
         </div>
       </div>
 
-      {/* 5. Section « Pour ton cours » conforme à la Capture 2 */}
+      {/* 5. Section « Repères sur le clavier » (Intégrée harmonieusement à l'accueil) */}
+      <div className="space-y-3 pt-1">
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="text-lg font-bold text-[#123C2A] dark:text-white">
+            Repères sur le clavier
+          </h2>
+          <button
+            onClick={() => setActiveTab('keypad')}
+            className="text-xs font-semibold text-[#123C2A] dark:text-[#57B88A] hover:underline"
+          >
+            Voir les touches
+          </button>
+        </div>
+
+        <div
+          onClick={() => setActiveTab('keypad')}
+          className="bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl p-4 cursor-pointer hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] active:scale-[0.99] transition-all space-y-3 shadow-xs"
+        >
+          {/* Ligne haute */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#123C2A] dark:bg-[#57B88A]" />
+              <span className="text-xs font-bold tracking-wider uppercase text-[#123C2A] dark:text-[#57B88A] font-mono">
+                CLAVIER fx-991ES
+              </span>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-[#EEF4F0] dark:bg-[#1B3E2E] border border-[#DCE5DF] dark:border-[#244F3C] flex items-center justify-center text-[#123C2A] dark:text-[#57B88A]">
+              <ArrowUpRight className="w-4 h-4" />
+            </div>
+          </div>
+
+          {/* Titre & Description */}
+          <div>
+            <h3 className="text-base font-bold text-[#123C2A] dark:text-white leading-snug">
+              Les touches & fonctions gravées
+            </h3>
+            <p className="text-xs text-[#5A7365] dark:text-[#8EA397] mt-1 leading-relaxed">
+              Repère MODE, SHIFT (jaune), ALPHA (rouge), S ⇔ D, la trigonométrie et les 8 modes de travail.
+            </p>
+          </div>
+
+          {/* Badges de touches en prévisualisation */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <span className="px-2.5 py-1 rounded-lg bg-[#EEF4F0] dark:bg-[#1B382B] text-[#123C2A] dark:text-[#57B88A] font-mono text-xs font-bold border border-[#DCE5DF] dark:border-[#26533F]">
+              MODE
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-[#FEF3C7] dark:bg-[#2B2214] text-[#B45309] dark:text-[#E5B329] font-mono text-xs font-bold border border-[#FDE68A] dark:border-[#523F1E]">
+              SHIFT
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-[#FEE2E2] dark:bg-[#2B1717] text-[#DC2626] dark:text-[#F87171] font-mono text-xs font-bold border border-[#FECACA] dark:border-[#5C2323]">
+              ALPHA
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-[#EEF4F0] dark:bg-[#1B382B] text-[#123C2A] dark:text-[#57B88A] font-mono text-xs font-bold border border-[#DCE5DF] dark:border-[#26533F]">
+              S ⇔ D
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-[#EEF4F0] dark:bg-[#1B382B] text-[#123C2A] dark:text-[#57B88A] font-mono text-xs font-bold border border-[#DCE5DF] dark:border-[#26533F]">
+              sin · cos
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Section « Pour ton cours » conforme à la Capture 2 */}
       <div className="space-y-3 pt-1">
         <h2 className="text-lg font-bold text-[#123C2A] dark:text-white px-0.5">
           Pour ton cours

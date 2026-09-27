@@ -23,8 +23,8 @@ const AppContent: React.FC = () => {
   const { activeTab, selectedFunction, closeFunctionDetail, textSize } = useApp();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Home and Progress views have their own built-in headers as shown in mockups 1 & 2
-  const showGlobalHeader = activeTab !== 'home' && activeTab !== 'progress';
+  // Home, Progress and Keypad views have their own built-in headers as shown in mockups
+  const showGlobalHeader = activeTab !== 'home' && activeTab !== 'progress' && activeTab !== 'keypad';
 
   return (
     <div

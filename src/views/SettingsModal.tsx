@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { LayoutGrid, BookOpen, ChevronRight, Minus, Plus, X } from 'lucide-react';
+import { BookOpen, ExternalLink, Minus, Plus, X } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -12,16 +12,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     theme,
     setTheme,
     textSize,
-    setTextSize,
-    setActiveTab
+    setTextSize
   } = useApp();
 
   if (!isOpen) return null;
-
-  const handleOpenTool = (tab: 'keypad' | 'discover') => {
-    setActiveTab(tab);
-    onClose();
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[#F7F8F4] dark:bg-[#0C1813] text-[#123C2A] dark:text-[#F1F5F2] animate-in fade-in duration-150 transition-colors">
@@ -110,52 +104,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
           </div>
 
-          {/* 2. Section Outils (Capture 3) */}
+          {/* 2. Section Outils (Guide constructeur Casio) */}
           <div className="space-y-2.5">
             <h2 className="text-base font-bold text-[#123C2A] dark:text-white px-0.5">
               Outils
             </h2>
 
-            <div className="bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl overflow-hidden divide-y divide-[#E2E8E3] dark:divide-[#1F3C2F] shadow-xs">
-              <button
-                onClick={() => handleOpenTool('keypad')}
-                className="w-full p-3.5 flex items-center justify-between text-left hover:bg-[#F7F8F4] dark:hover:bg-[#183428] active:bg-[#EEF4F0] dark:active:bg-[#1C3B2E] transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#EEF4F0] dark:bg-[#1B3B2D] text-[#123C2A] dark:text-[#57B88A] flex items-center justify-center shrink-0">
-                    <LayoutGrid className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-[#123C2A] dark:text-white">
-                      Repérer les touches
-                    </div>
-                    <div className="text-xs text-[#5A7365] dark:text-[#8EA397]">
-                      SHIFT, ALPHA, MODE et les repères utiles
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-[#7A8C82] dark:text-[#8EA397] shrink-0 ml-2" />
-              </button>
-
-              <button
-                onClick={() => handleOpenTool('discover')}
-                className="w-full p-3.5 flex items-center justify-between text-left hover:bg-[#F7F8F4] dark:hover:bg-[#183428] active:bg-[#EEF4F0] dark:active:bg-[#1C3B2E] transition-colors"
+            <div className="bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl overflow-hidden shadow-xs">
+              <a
+                href="https://support.casio.com/pdf/004/fx-115ES_991ES_Eng.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full p-3.5 flex items-center justify-between text-left hover:bg-[#F7F8F4] dark:hover:bg-[#183428] active:bg-[#EEF4F0] dark:active:bg-[#1C3B2E] transition-colors group"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-[#EEF4F0] dark:bg-[#1B3B2D] text-[#123C2A] dark:text-[#57B88A] flex items-center justify-center shrink-0">
                     <BookOpen className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-[#123C2A] dark:text-white">
-                      Guide constructeur Casio
+                    <div className="text-sm font-bold text-[#123C2A] dark:text-white flex items-center gap-1.5">
+                      <span>Guide constructeur Casio</span>
                     </div>
                     <div className="text-xs text-[#5A7365] dark:text-[#8EA397]">
-                      Guide de l’édition fx-991ES originale
+                      Manuel officiel fx-115ES / fx-991ES (PDF)
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-[#7A8C82] dark:text-[#8EA397] shrink-0 ml-2" />
-              </button>
+                <ExternalLink className="w-4 h-4 text-[#7A8C82] group-hover:text-[#123C2A] dark:text-[#8EA397] dark:group-hover:text-white shrink-0 ml-2 transition-colors" />
+              </a>
             </div>
           </div>
 

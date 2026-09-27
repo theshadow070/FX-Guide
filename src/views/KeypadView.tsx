@@ -1,145 +1,250 @@
 import React, { useState } from 'react';
+import { useApp } from '../context/AppContext';
+import {
+  ArrowLeft,
+  LayoutGrid,
+  Command,
+  ArrowLeftRight,
+  AlertCircle,
+  Download,
+  Share2,
+  Sparkles,
+  Search,
+  BookOpen,
+  Check
+} from 'lucide-react';
+import { ExportKeypadModal } from '../components/ExportKeypadModal';
 import { CASIO_KEYPAD_KEYS } from '../data/keypadData';
 import { KeypadKeyInfo } from '../types';
-import { KeyBadge } from '../components/KeyBadge';
-import { FX991ES_DATABASE } from '../data/fx991esDatabase';
-import { useApp } from '../context/AppContext';
-import { Info, Sparkles, HelpCircle, Check, ArrowRight } from 'lucide-react';
 
 export const KeypadView: React.FC = () => {
-  const { openFunctionDetail } = useApp();
-  const [selectedKey, setSelectedKey] = useState<KeypadKeyInfo>(
-    CASIO_KEYPAD_KEYS.find(k => k.id === 'key-calc') || CASIO_KEYPAD_KEYS[0]
-  );
-  const [activeZone, setActiveZone] = useState<'all' | 'navigation' | 'scientific' | 'memory_calc' | 'numeric'>('all');
+  const { setActiveTab } = useApp();
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [selectedKey, setSelectedKey] = useState<KeypadKeyInfo | null>(null);
+  const [searchFilter, setSearchFilter] = useState('');
 
-  const filteredKeys = CASIO_KEYPAD_KEYS.filter(
-    k => activeZone === 'all' || k.zone === activeZone
+  // Repères majeurs imprimés sur la calculatrice (conformes aux captures d'écran de la maquette)
+  const landmarkCards = [
+    {
+      id: 'mode',
+      title: 'MODE',
+      description: 'Affiche les modes de calcul. Le chiffre choisi correspond à un mode précis.',
+      badgeLabel: 'MODE',
+      iconType: 'grid',
+      callout: '1 COMP · 2 CMPLX · 3 STAT · 4 BASE-N · 5 EQN · 6 MATRIX · 7 TABLE · 8 VECTOR'
+    },
+    {
+      id: 'shift',
+      title: 'SHIFT',
+      description: 'Active la fonction secondaire imprimée en jaune au-dessus d’une touche.',
+      badgeLabel: 'SHIFT',
+      iconType: 'command',
+      callout: 'Appuie sur SHIFT en premier, puis sur la touche concernée.'
+    },
+    {
+      id: 'alpha',
+      title: 'ALPHA',
+      description: 'Saisit le symbole ou la variable imprimé en rouge sur une touche.',
+      badgeLabel: 'ALPHA',
+      iconType: 'command',
+      callout: 'Appuie sur ALPHA en premier, puis sur la touche concernée.'
+    },
+    {
+      id: 'sd',
+      title: 'S ⇔ D',
+      description: 'Bascule entre une forme exacte et une écriture décimale lorsqu’elle est disponible.',
+      badgeLabel: 'S ⇔ D',
+      iconType: 'swap',
+      callout: 'Essaie-la après avoir affiché un résultat.'
+    },
+    {
+      id: 'trig',
+      title: 'sin · cos · tan',
+      description: 'Fonctions trigonométriques. La touche secondaire donne la fonction inverse.',
+      badgeLabel: 'sin',
+      iconType: 'command',
+      callout: 'Contrôle toujours l’indicateur D, R ou G avant un calcul d’angle.'
+    },
+    {
+      id: 'drg',
+      title: 'D · R · G',
+      description: 'Indicateur à l’écran de l’unité d’angle actuellement sélectionnée.',
+      badgeLabel: null,
+      iconType: 'command',
+      callout: 'D = degrés · R = radians · G = grades.'
+    },
+    {
+      id: 'calc',
+      title: 'CALC · SOLVE',
+      description: 'Évalue une formule pour une valeur de variable, ou résout une équation quelconque.',
+      badgeLabel: 'CALC',
+      iconType: 'grid',
+      callout: 'SHIFT CALC lance le solveur universel (SOLVE).'
+    },
+    {
+      id: 'derivee',
+      title: 'd/dx · ∫dx',
+      description: 'Calcule une dérivée numérique f’(a) ou une intégrale définie exacte.',
+      badgeLabel: '∫dx',
+      iconType: 'command',
+      callout: 'SHIFT ∫dx insère d/dx( pour dériver numériquement en un point.'
+    },
+    {
+      id: 'memoire',
+      title: 'STO · RCL',
+      description: 'Stockage et rappel des 9 mémoires variables (A, B, C, D, E, F, X, Y, M).',
+      badgeLabel: 'RCL',
+      iconType: 'swap',
+      callout: 'SHIFT RCL (STO) suivi de la lettre pour sauvegarder un nombre.'
+    }
+  ];
+
+  const filteredLandmarks = landmarkCards.filter(c =>
+    c.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    c.description.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    c.callout.toLowerCase().includes(searchFilter.toLowerCase())
   );
 
   return (
-    <div className="space-y-4 pb-20">
-      {/* Title */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-[#173126] dark:text-[#F0F4EF]">
-          Explorateur des touches fx-991ES
-        </h1>
-        <p className="text-xs text-[#63736B] dark:text-[#B7C5BE] mt-0.5">
-          Touche n’importe quel bouton pour découvrir ses fonctions principales, SHIFT et ALPHA.
-        </p>
-      </div>
+    <div className="space-y-4 pb-24 animate-in fade-in duration-150">
+      {/* 1. Header supérieur conforme à la maquette */}
+      <div className="flex items-start justify-between gap-3 pt-1">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActiveTab('home')}
+            aria-label="Retour à l'accueil"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-white hover:bg-[#EEF4F0] dark:hover:bg-[#1A3429] active:scale-95 transition-all shadow-xs"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
 
-      {/* Selected Key Detail Card */}
-      <div className="bg-white dark:bg-[#1D3028] border-2 border-[#123C2A]/20 dark:border-[#6FAF82]/30 rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between border-b border-[#EEF2ED] dark:border-[#2C4439] pb-3">
-          <div className="flex items-center gap-3">
-            <KeyBadge label={selectedKey.primaryLabel} size="lg" />
-            <div>
-              <div className="text-sm font-bold text-[#173126] dark:text-[#F0F4EF]">
-                Touche {selectedKey.primaryLabel}
-              </div>
-              <div className="text-[11px] font-mono text-[#63736B] dark:text-[#879890]">
-                Fréquence en S2 : {selectedKey.usageCountInS2}
-              </div>
+          <div>
+            <div className="text-[11px] font-mono font-bold tracking-wider uppercase text-[#5A7365] dark:text-[#8EA397]">
+              REPÈRES SUR LE CLAVIER
             </div>
-          </div>
-
-          <div className="flex flex-col items-end gap-1 text-[11px] font-mono">
-            {selectedKey.shiftLabel && (
-              <span className="text-[#D4A017] dark:text-[#E5B329] font-bold">
-                [SHIFT] {selectedKey.shiftLabel}
-              </span>
-            )}
-            {selectedKey.alphaLabel && (
-              <span className="text-[#B22222] dark:text-[#F87171] font-bold">
-                [ALPHA] {selectedKey.alphaLabel}
-              </span>
-            )}
-            {selectedKey.secondaryUnderLabel && (
-              <span className="text-[#123C2A] dark:text-[#6FAF82] font-semibold">
-                {selectedKey.secondaryUnderLabel}
-              </span>
-            )}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#123C2A] dark:text-white mt-0.5">
+              Les touches
+            </h1>
           </div>
         </div>
 
-        {/* Description */}
-        <p className="text-xs text-[#173126] dark:text-[#F0F4EF] leading-relaxed">
-          {selectedKey.description}
-        </p>
+        {/* Bouton Exporter haute définition */}
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="h-10 px-3 rounded-xl bg-[#123C2A] dark:bg-[#1B382B] text-white dark:text-[#57B88A] border border-[#123C2A] dark:border-[#26533F] flex items-center gap-1.5 text-xs font-bold hover:bg-[#1B4E38] dark:hover:bg-[#234C3A] active:scale-95 transition-all shadow-xs shrink-0"
+        >
+          <Download className="w-4 h-4" />
+          <span className="hidden sm:inline">Exporter</span>
+        </button>
+      </div>
 
-        {/* Example in S2 */}
-        <div className="p-3 bg-[#F7F8F4] dark:bg-[#14231D] rounded-xl border border-[#E2E8E3] dark:border-[#2C4439] space-y-1">
-          <div className="text-[11px] font-bold text-[#123C2A] dark:text-[#6FAF82] font-mono">
-            Exemple d’utilisation :
+      {/* Description du guide des touches */}
+      <p className="text-xs sm:text-sm text-[#5A7365] dark:text-[#8EA397] leading-relaxed">
+        Repère les fonctions imprimées sur le clavier de la fx-991ES originale.
+      </p>
+
+      {/* Barre de filtre rapide */}
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8C82] dark:text-[#8EA397]" />
+        <input
+          type="search"
+          value={searchFilter}
+          onChange={e => setSearchFilter(e.target.value)}
+          placeholder="Filtrer une touche (MODE, SHIFT, ALPHA, S⇔D...)"
+          className="w-full h-10 pl-10 pr-4 text-xs sm:text-sm bg-white dark:bg-[#10221A] text-[#123C2A] dark:text-white placeholder-[#7A8C82] dark:placeholder-[#8EA397] rounded-xl border border-[#E2E8E3] dark:border-[#1E3A2D] focus:outline-none focus:border-[#123C2A] dark:focus:border-[#57B88A] shadow-xs"
+        />
+      </div>
+
+      {/* 2. Liste des cartes de touches conformes aux captures 1 & 2 de la maquette */}
+      <div className="space-y-3 pt-1">
+        {filteredLandmarks.map(card => {
+          return (
+            <div
+              key={card.id}
+              className="bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl p-4 space-y-3 shadow-xs hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] transition-colors"
+            >
+              {/* Entête de carte : Icône + Titre */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#EEF4F0] dark:bg-[#1B3B2D] text-[#123C2A] dark:text-[#57B88A] flex items-center justify-center shrink-0">
+                  {card.iconType === 'grid' && <LayoutGrid className="w-4 h-4" />}
+                  {card.iconType === 'command' && <Command className="w-4 h-4" />}
+                  {card.iconType === 'swap' && <ArrowLeftRight className="w-4 h-4" />}
+                </div>
+                <h2 className="text-base sm:text-lg font-extrabold text-[#123C2A] dark:text-white tracking-tight">
+                  {card.title}
+                </h2>
+              </div>
+
+              {/* Description */}
+              <p className="text-xs text-[#5A7365] dark:text-[#A5C1B2] leading-relaxed">
+                {card.description}
+              </p>
+
+              {/* Badge de touche physique si présent */}
+              {card.badgeLabel && (
+                <div>
+                  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-[#E2E8E3] dark:bg-[#1C3B2D] text-[#123C2A] dark:text-[#57B88A] font-mono font-bold text-xs shadow-2xs border border-[#CBD5E1] dark:border-[#25523D]">
+                    {card.badgeLabel}
+                  </span>
+                </div>
+              )}
+
+              {/* Boîte d'indication inférieure conforme à la maquette */}
+              <div className="p-3 rounded-xl bg-[#F7F8F4] dark:bg-[#0D1D16] border border-[#E2E8E3] dark:border-[#173024] text-xs font-medium text-[#123C2A] dark:text-[#D1E0D7] leading-relaxed">
+                {card.callout}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 3. Section « Un point important » conforme à la Capture 3 de la maquette */}
+      <div className="space-y-3 pt-3">
+        <h2 className="text-base sm:text-lg font-bold text-[#123C2A] dark:text-white px-0.5">
+          Un point important
+        </h2>
+
+        {/* Encadré d'avertissement ambre conforme */}
+        <div className="p-4 rounded-2xl bg-[#FFFBEB] dark:bg-[#282112] border border-[#FDE68A] dark:border-[#4D3A1B] flex items-start gap-3 shadow-xs">
+          <div className="text-[#B45309] dark:text-[#E59838] shrink-0 mt-0.5">
+            <AlertCircle className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <p className="text-xs text-[#63736B] dark:text-[#B7C5BE] leading-relaxed">
-            {selectedKey.exampleUsage}
+          <p className="text-xs sm:text-sm text-[#92400E] dark:text-[#E59838] leading-relaxed font-medium">
+            Les fonctions imprimées sur un autre modèle Casio peuvent être différentes. Vérifie le nom fx-991ES sur ta calculatrice avant de suivre une fiche.
           </p>
         </div>
       </div>
 
-      {/* Zone Selector Filter */}
-      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
-        {[
-          { id: 'all', label: 'Toutes les touches' },
-          { id: 'scientific', label: 'Scientifiques' },
-          { id: 'navigation', label: 'Commandes' },
-          { id: 'memory_calc', label: 'Mémoire & Parenthèses' },
-          { id: 'numeric', label: 'Pavé numérique' }
-        ].map(z => (
-          <button
-            key={z.id}
-            onClick={() => setActiveZone(z.id as any)}
-            className={`whitespace-nowrap px-3 py-1.5 text-xs rounded-lg transition-colors shrink-0 ${
-              activeZone === z.id
-                ? 'bg-[#123C2A] text-white dark:bg-[#6FAF82] dark:text-[#0E1914] font-semibold'
-                : 'bg-white dark:bg-[#1D3028] text-[#63736B] dark:text-[#B7C5BE] border border-[#E2E8E3] dark:border-[#2C4439]'
-            }`}
-          >
-            {z.label}
-          </button>
-        ))}
+      {/* 4. Barre d'action d'exportation en bas de page */}
+      <div className="pt-2">
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="w-full p-4 rounded-2xl bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-between text-left hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] active:scale-[0.99] transition-all shadow-xs group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#123C2A] dark:bg-[#1B3B2D] text-white dark:text-[#57B88A] flex items-center justify-center shrink-0">
+              <Download className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-[#123C2A] dark:text-white">
+                Exporter la fiche mémo des touches
+              </div>
+              <div className="text-xs text-[#5A7365] dark:text-[#8EA397]">
+                PDF Imprimable A4, Markdown (.md), Excel (.csv) et JSON
+              </div>
+            </div>
+          </div>
+          <span className="text-xs font-bold text-[#123C2A] dark:text-[#57B88A] group-hover:underline">
+            Exporter
+          </span>
+        </button>
       </div>
 
-      {/* Interactive Keypad Grid */}
-      <div className="bg-[#E4E9E2] dark:bg-[#14231D] p-3 rounded-2xl border border-[#CBD5E1] dark:border-[#2C4439] shadow-inner">
-        <div className="text-[10px] font-mono text-[#63736B] dark:text-[#879890] text-center mb-2">
-          CLAVIER CASIO NATURAL-V.P.A.M.
-        </div>
-
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-          {filteredKeys.map(k => {
-            const isSelected = selectedKey.id === k.id;
-            return (
-              <button
-                key={k.id}
-                onClick={() => setSelectedKey(k)}
-                className={`relative p-2 flex flex-col items-center justify-center min-h-[48px] rounded-xl transition-all active:scale-95 ${
-                  isSelected
-                    ? 'ring-2 ring-[#123C2A] dark:ring-[#B8E86A] bg-white dark:bg-[#244036] shadow-md'
-                    : 'bg-white/80 dark:bg-[#1D3028] hover:bg-white dark:hover:bg-[#244036]/80'
-                }`}
-              >
-                {/* Secondary labels above key */}
-                <div className="w-full flex items-center justify-between text-[9px] font-mono leading-none mb-1 px-0.5">
-                  <span className="text-[#D4A017] dark:text-[#E5B329] font-bold truncate">
-                    {k.shiftLabel || ''}
-                  </span>
-                  <span className="text-[#B22222] dark:text-[#F87171] font-bold truncate">
-                    {k.alphaLabel || ''}
-                  </span>
-                </div>
-
-                {/* Primary label */}
-                <span className="text-xs font-bold font-mono text-[#173126] dark:text-[#F0F4EF]">
-                  {k.primaryLabel}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Modal d'exportation avec multiples formats */}
+      <ExportKeypadModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+      />
     </div>
   );
 };
