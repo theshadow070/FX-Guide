@@ -1,0 +1,6 @@
+{
+  "name": "FX Guide",
+  "description": "Guide d'apprentissage mobile premium pour la Casio fx-991ES originale – Première S2.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
