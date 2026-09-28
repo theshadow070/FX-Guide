@@ -3,6 +3,8 @@ import { useApp } from '../context/AppContext';
 import { FX991ES_DATABASE } from '../data/fx991esDatabase';
 import { FunctionCategory } from '../types';
 import { LayoutGrid, ArrowUpRight } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
+import { soundManager } from '../utils/sounds';
 
 export const ExplorerView: React.FC = () => {
   const { openFunctionDetail, selectedCategory, setSelectedCategory, setActiveTab } = useApp();
@@ -102,7 +104,11 @@ export const ExplorerView: React.FC = () => {
             return (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => {
+                  triggerHaptic('selection');
+                  soundManager.playTap();
+                  setSelectedCategory(cat.id);
+                }}
                 className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${
                   isSelected
                     ? 'bg-[#123C2A] text-white dark:bg-[#58D68D] dark:text-[#0B1713] shadow-xs'
@@ -132,7 +138,11 @@ export const ExplorerView: React.FC = () => {
           {filteredItems.map(item => (
             <div
               key={item.id}
-              onClick={() => openFunctionDetail(item)}
+              onClick={() => {
+                triggerHaptic('light');
+                soundManager.playTap();
+                openFunctionDetail(item);
+              }}
               className="bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl p-4 space-y-2.5 shadow-xs hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] transition-colors cursor-pointer text-left active:scale-[0.99] group"
             >
               {/* En-tête interne : Tag de catégorie en vert + Bouton rond ↗ */}

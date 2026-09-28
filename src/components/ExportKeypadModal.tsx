@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, Printer, FileText, Table, Code2, Check, Download } from 'lucide-react';
+import { X, Printer, FileText, Table, Check, Download } from 'lucide-react';
 import {
   exportAsMarkdown,
   exportAsCsv,
-  exportAsJson,
   printKeypadMemo
 } from '../utils/exportKeypad';
+import { triggerHaptic } from '../utils/haptics';
+import { soundManager } from '../utils/sounds';
 
 interface ExportKeypadModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ export const ExportKeypadModal: React.FC<ExportKeypadModalProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   const handleAction = (type: string, action: () => void) => {
+    triggerHaptic('medium');
+    soundManager.playSuccess();
     action();
     setDownloadSuccess(type);
     setTimeout(() => {
@@ -55,53 +58,30 @@ export const ExportKeypadModal: React.FC<ExportKeypadModalProps> = ({ isOpen, on
       actionText: 'Télécharger le fichier .csv',
       colorClass: 'bg-[#EEF4F0] dark:bg-[#1B382B] text-[#123C2A] dark:text-[#57B88A] hover:bg-[#E0EBE4] dark:hover:bg-[#234C3A]',
       onTrigger: exportAsCsv
-    },
-    {
-      id: 'json',
-      title: 'Données Structurées (.json)',
-      badge: 'Format Développeur & Données',
-      description: 'Structure complète des 40+ touches, modes Casio et registres mémoires formatée en JSON indenté.',
-      icon: <Code2 className="w-5 h-5" />,
-      actionText: 'Télécharger le fichier .json',
-      colorClass: 'bg-[#EEF4F0] dark:bg-[#1B382B] text-[#123C2A] dark:text-[#57B88A] hover:bg-[#E0EBE4] dark:hover:bg-[#234C3A]',
-      onTrigger: exportAsJson
     }
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center items-center bg-black/80 backdrop-blur-md transition-opacity animate-in fade-in duration-150">
-      {/* Clic sur le fond pour fermer */}
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-        aria-label="Fermer la fenêtre d'exportation"
-      />
-
-      {/* Conteneur du modal / feuille native */}
-      <div className="relative w-full max-w-lg bg-[#F7F8F4] dark:bg-[#0D1D16] border-t sm:border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden z-10 animate-in slide-in-from-bottom duration-200 text-[#123C2A] dark:text-[#F1F5F2] transition-colors">
-        {/* Poignée de glissement sur mobile */}
-        <div className="w-12 h-1 bg-[#CBD5E1] dark:bg-[#2C4439] rounded-full mx-auto mt-2.5 shrink-0 sm:hidden" />
-
-        {/* 1. Header FIXE - Toujours parfaitement visible sans chevauchement */}
-        <div className="px-5 pt-3 pb-3 border-b border-[#E2E8E3] dark:border-[#1F3C2F] shrink-0 bg-[#F7F8F4] dark:bg-[#0D1D16]">
-          <div className="flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col bg-[#F7F8F4] dark:bg-[#0E1B15] rounded-3xl border border-[#E2E8E3] dark:border-[#1F3C2F] shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-[#E2E8E3] dark:border-[#1F3C2F] bg-white dark:bg-[#12241C] shrink-0">
+          <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#123C2A] dark:bg-[#57B88A]" />
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#5A7365] dark:text-[#8EA397]">
-                  EXPORTATION HAUTE FIDÉLITÉ
-                </span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight mt-1 text-[#123C2A] dark:text-white">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#5A7365] dark:text-[#8EA397]">
+                EXPORTATION HAUTE FIDÉLITÉ
+              </span>
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight mt-0.5 text-[#123C2A] dark:text-white">
                 Exporter les touches fx-991ES
               </h2>
-              <p className="text-xs text-[#5A7365] dark:text-[#8EA397] mt-0.5">
-                Choisis ton format pour réviser, imprimer ou archiver.
-              </p>
             </div>
 
             <button
-              onClick={onClose}
+              onClick={() => {
+                triggerHaptic('light');
+                soundManager.playTap();
+                onClose();
+              }}
               aria-label="Fermer"
               className="w-9 h-9 rounded-xl bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#5A7365] dark:text-[#8EA397] hover:text-[#123C2A] dark:hover:text-white active:scale-95 transition-all shadow-xs shrink-0"
             >
@@ -110,7 +90,7 @@ export const ExportKeypadModal: React.FC<ExportKeypadModalProps> = ({ isOpen, on
           </div>
         </div>
 
-        {/* 2. Corps DÉFILABLE - Les options ne coupent jamais et restent lisibles */}
+        {/* Options list */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-3.5">
           {exportOptions.map(opt => {
             const isSuccess = downloadSuccess === opt.id;
@@ -119,9 +99,8 @@ export const ExportKeypadModal: React.FC<ExportKeypadModalProps> = ({ isOpen, on
                 key={opt.id}
                 className="p-4 rounded-2xl border border-[#E2E8E3] dark:border-[#1F3C2F] bg-white dark:bg-[#142920] hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] transition-all space-y-2.5 shadow-xs"
               >
-                {/* En-tête de carte avec icône, titre et badge horizontal */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#EEF4F0] dark:bg-[#1B3B2D] border border-[#E2E8E3] dark:border-[#234535] text-[#123C2A] dark:text-[#57B88A] flex items-center justify-center shrink-0 shadow-2xs">
+                  <div className="w-10 h-10 rounded-xl bg-[#EEF4F0] dark:bg-[#1B3B2D] border border-[#E2E8E3] dark:border-[#234535] text-[#123C2A] dark:text-[#57B88A] flex items-center justify-center shrink-0">
                     {opt.icon}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -136,18 +115,14 @@ export const ExportKeypadModal: React.FC<ExportKeypadModalProps> = ({ isOpen, on
                   </div>
                 </div>
 
-                {/* Description de l'option */}
                 <p className="text-xs text-[#5A7365] dark:text-[#8EA397] leading-relaxed">
                   {opt.description}
                 </p>
 
-                {/* Bouton d'action pleine largeur pour un clic facile et aucun texte tronqué */}
                 <button
                   onClick={() => handleAction(opt.id, opt.onTrigger)}
                   className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-xs ${
-                    isSuccess
-                      ? 'bg-[#15803D] text-white'
-                      : opt.colorClass
+                    isSuccess ? 'bg-[#15803D] text-white' : opt.colorClass
                   }`}
                 >
                   {isSuccess ? (
@@ -165,13 +140,6 @@ export const ExportKeypadModal: React.FC<ExportKeypadModalProps> = ({ isOpen, on
               </div>
             );
           })}
-        </div>
-
-        {/* 3. Footer FIXE en bas */}
-        <div className="px-5 py-3 border-t border-[#E2E8E3] dark:border-[#1F3C2F] bg-[#F7F8F4] dark:bg-[#0D1D16] shrink-0 text-center">
-          <p className="text-[11px] text-[#7A8C82] dark:text-[#6C8377]">
-            Tous les formats intègrent les 40+ touches de la Casio fx-991ES originale.
-          </p>
         </div>
       </div>
     </div>

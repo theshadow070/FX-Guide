@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   ArrowLeft,
@@ -9,10 +9,35 @@ import {
   Download
 } from 'lucide-react';
 import { ExportKeypadModal } from '../components/ExportKeypadModal';
+import { triggerHaptic } from '../utils/haptics';
+import { soundManager } from '../utils/sounds';
 
 export const KeypadView: React.FC = () => {
   const { setActiveTab } = useApp();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // iOS-style edge swipe to go back
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const diffX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const diffY = e.changedTouches[0].clientY - touchStartYRef.current;
+
+    if (diffX > 75 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      triggerHaptic('light');
+      soundManager.playTap();
+      setActiveTab('explorer');
+    }
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
 
   // Cartes conformes aux Captures 2 & 3 de la maquette
   const keyCards = [
@@ -58,21 +83,29 @@ export const KeypadView: React.FC = () => {
     },
     {
       id: 'drg',
-      title: 'D · R · G',
-      description: 'Indicateur à l’écran de l’unité d’angle actuellement sélectionnée.',
-      badgeLabel: null,
-      iconType: 'command',
+      title: 'DRG ▷',
+      description: 'Convertit un angle entre degrés, radians et grades sans changer le réglage global.',
+      badgeLabel: 'DRG▷',
+      iconType: 'swap',
       callout: 'D = degrés · R = radians · G = grades.'
     }
   ];
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in duration-150">
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="space-y-4 pb-24 animate-in fade-in duration-150 select-none"
+    >
       {/* A. Header avec Retour (Capture 2) */}
       <div className="space-y-3 pt-1">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setActiveTab('explorer')}
+            onClick={() => {
+              triggerHaptic('light');
+              soundManager.playTap();
+              setActiveTab('explorer');
+            }}
             aria-label="Retour à l'explorateur"
             className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-white hover:bg-[#EEF4F0] dark:hover:bg-[#193A2E] active:scale-95 transition-all shadow-xs shrink-0"
           >
@@ -143,40 +176,21 @@ export const KeypadView: React.FC = () => {
         </h2>
 
         {/* Encadré d’alerte / attention brun/ambré sombre */}
-        <div className="p-4 rounded-2xl bg-[#FFFBEB] dark:bg-[#291E10] border border-[#FDE68A] dark:border-[#422E14] flex items-start gap-3 shadow-xs">
-          <AlertCircle className="w-5 h-5 text-[#B45309] dark:text-[#E59838] shrink-0 mt-0.5 stroke-[2.2]" />
-          <p className="text-xs sm:text-sm text-[#92400E] dark:text-[#E59838] leading-relaxed font-medium">
-            Les fonctions imprimées sur un autre modèle Casio peuvent être différentes. Vérifie le nom fx-991ES sur ta calculatrice avant de suivre une fiche.
+        <div className="bg-[#2A2318] dark:bg-[#201A11] border border-[#4D3E24] dark:border-[#3D3019] rounded-2xl p-4 sm:p-5 shadow-xs space-y-2">
+          <div className="flex items-center gap-2 text-[#E5A93C] dark:text-[#F3BA52]">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <h3 className="text-sm font-bold tracking-tight">
+              fx-991ES originale uniquement
+            </h3>
+          </div>
+
+          <p className="text-xs sm:text-sm text-[#E6DACB] dark:text-[#D9CCBA] leading-relaxed">
+            Ce guide correspond à la Casio fx-991ES classique. Les versions PLUS, EX ClassWiz ou CW ont des menus et des raccourcis différents.
           </p>
         </div>
       </div>
 
-      {/* Bouton d'exportation complémentaire en bas */}
-      <div className="pt-2">
-        <button
-          onClick={() => setIsExportModalOpen(true)}
-          className="w-full p-4 rounded-2xl bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-between text-left hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] active:scale-[0.99] transition-all shadow-xs group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#EEF4F0] dark:bg-[#193A2E] text-[#123C2A] dark:text-[#58D68D] flex items-center justify-center shrink-0">
-              <Download className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-[#123C2A] dark:text-white">
-                Exporter la fiche mémo des touches
-              </div>
-              <div className="text-xs text-[#5A7365] dark:text-[#8EA397]">
-                PDF Imprimable A4, Markdown, CSV Excel et JSON
-              </div>
-            </div>
-          </div>
-          <span className="text-xs font-bold text-[#123C2A] dark:text-[#58D68D] group-hover:underline">
-            Exporter
-          </span>
-        </button>
-      </div>
-
-      {/* Modal d'exportation */}
+      {/* Modal d'export du clavier */}
       <ExportKeypadModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}

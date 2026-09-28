@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer utilities {
-  /* Safe area padding for iPhone notch and home indicator */
+  /* Safe area padding for iPhone notch, Dynamic Island, and home indicator */
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 16px);
   }
@@ -24,8 +24,25 @@
 html {
   -webkit-tap-highlight-color: transparent;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Enhanced dark theme background: deep premium forest night instead of pitch pure black */
+.dark body {
+  background-color: #0E1B15;
+  color: #F0F4F2;
 }
 
 code, kbd, samp, pre {
   font-family: 'JetBrains Mono', monospace;
+}
+
+/* Respect user's motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

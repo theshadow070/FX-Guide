@@ -3,6 +3,8 @@ import { useApp } from '../context/AppContext';
 import { FX991ES_DATABASE } from '../data/fx991esDatabase';
 import { FunctionCategory } from '../types';
 import { Heart, ArrowUpRight } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
+import { soundManager } from '../utils/sounds';
 
 export const FavoritesHistoryView: React.FC = () => {
   const {
@@ -101,7 +103,11 @@ export const FavoritesHistoryView: React.FC = () => {
             {favoriteItems.map(item => (
               <div
                 key={item.id}
-                onClick={() => openFunctionDetail(item)}
+                onClick={() => {
+                  triggerHaptic('light');
+                  soundManager.playTap();
+                  openFunctionDetail(item);
+                }}
                 className="bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl p-4 space-y-2.5 shadow-xs hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] transition-colors cursor-pointer text-left active:scale-[0.99] group relative"
               >
                 {/* En-tête interne : Tag de catégorie en vert pastel + Bouton cœur rempli */}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="40" fill="#123C2A"/>
+  <rect x="24" y="24" width="144" height="60" rx="8" fill="#BBC9B1" stroke="#9DAE93" stroke-width="4"/>
+  <text x="32" y="44" font-family="monospace" font-size="12" font-weight="bold" fill="#14231A">fx-991ES</text>
+  <text x="156" y="44" font-family="monospace" font-size="10" font-weight="bold" fill="#14231A" text-anchor="end">D Math</text>
+  <text x="156" y="72" font-family="monospace" font-size="18" font-weight="bold" fill="#14231A" text-anchor="end">x=3.1415</text>
+  <!-- Mini Keys Grid -->
+  <g fill="#2A3B33">
+    <rect x="26" y="98" width="24" height="16" rx="4" fill="#D4A017"/>
+    <rect x="58" y="98" width="24" height="16" rx="4" fill="#B22222"/>
+    <rect x="90" y="98" width="44" height="16" rx="4" fill="#1A2D23"/>
+    <rect x="142" y="98" width="24" height="16" rx="4" fill="#D97706"/>
+    
+    <rect x="26" y="122" width="24" height="16" rx="4"/>
+    <rect x="58" y="122" width="24" height="16" rx="4"/>
+    <rect x="90" y="122" width="24" height="16" rx="4"/>
+    <rect x="122" y="122" width="44" height="16" rx="4" fill="#1D4A37"/>
+    
+    <rect x="26" y="146" width="24" height="16" rx="4"/>
+    <rect x="58" y="146" width="24" height="16" rx="4"/>
+    <rect x="90" y="146" width="24" height="16" rx="4"/>
+    <rect x="122" y="146" width="44" height="16" rx="4" fill="#58D68D"/>
+  </g>
+</svg>

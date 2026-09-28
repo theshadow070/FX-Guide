@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CasioFunctionItem, FunctionCategory } from '../types';
 import { FX991ES_DATABASE } from '../data/fx991esDatabase';
+import { soundManager } from '../utils/sounds';
+import { setHapticEnabled, isHapticEnabled } from '../utils/haptics';
 
 export type AppTab = 'home' | 'explorer' | 'search' | 'curriculum' | 'keypad' | 'favorites' | 'discover' | 'progress';
 
@@ -28,7 +30,17 @@ interface AppContextType {
   isMastered: (id: string) => boolean;
   textSize: 'normal' | 'large';
   setTextSize: (size: 'normal' | 'large') => void;
+  soundEnabled: boolean;
+  setSoundEnabled: (enabled: boolean) => void;
+  hapticEnabled: boolean;
+  setHapticState: (enabled: boolean) => void;
   resetAllUserData: () => void;
+  isErrorDecoderOpen: boolean;
+  openErrorDecoder: () => void;
+  closeErrorDecoder: () => void;
+  isSurvivalMemoOpen: boolean;
+  openSurvivalMemo: () => void;
+  closeSurvivalMemo: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -43,6 +55,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<FunctionCategory | 'all'>('all');
   const [selectedFunction, setSelectedFunction] = useState<CasioFunctionItem | null>(null);
+
+  const [soundEnabled, setSoundEnabledState] = useState<boolean>(() => soundManager.isEnabled());
+  const [hapticEnabled, setHapticStateLocal] = useState<boolean>(() => isHapticEnabled());
+
+  const setSoundEnabled = (val: boolean) => {
+    soundManager.setEnabled(val);
+    setSoundEnabledState(val);
+  };
+
+  const setHapticState = (val: boolean) => {
+    setHapticEnabled(val);
+    setHapticStateLocal(val);
+  };
 
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
@@ -74,6 +99,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [textSize, setTextSize] = useState<'normal' | 'large'>(() => {
     return (localStorage.getItem('fxguide_text_size') as 'normal' | 'large') || 'normal';
   });
+
+  const [isErrorDecoderOpen, setIsErrorDecoderOpen] = useState(false);
+  const [isSurvivalMemoOpen, setIsSurvivalMemoOpen] = useState(false);
+
+  const openErrorDecoder = () => setIsErrorDecoderOpen(true);
+  const closeErrorDecoder = () => setIsErrorDecoderOpen(false);
+  const openSurvivalMemo = () => setIsSurvivalMemoOpen(true);
+  const closeSurvivalMemo = () => setIsSurvivalMemoOpen(false);
 
   // Handle dark mode evaluation
   useEffect(() => {
@@ -113,6 +146,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const toggleFavorite = (id: string) => {
     setFavorites(prev => {
+      const isAdding = !prev.includes(id);
+      soundManager.playFavorite(isAdding);
       const updated = prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id];
       localStorage.setItem('fxguide_favorites', JSON.stringify(updated));
       return updated;
@@ -137,6 +172,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const toggleMastered = (id: string) => {
     setMastered(prev => {
+      const isAdding = !prev.includes(id);
+      if (isAdding) {
+        soundManager.playSuccess();
+      }
       const updated = prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id];
       localStorage.setItem('fxguide_mastered', JSON.stringify(updated));
       return updated;
@@ -194,7 +233,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isMastered,
         textSize,
         setTextSize: handleSetTextSize,
-        resetAllUserData
+        soundEnabled,
+        setSoundEnabled,
+        hapticEnabled,
+        setHapticState,
+        resetAllUserData,
+        isErrorDecoderOpen,
+        openErrorDecoder,
+        closeErrorDecoder,
+        isSurvivalMemoOpen,
+        openSurvivalMemo,
+        closeSurvivalMemo
       }}
     >
       {children}

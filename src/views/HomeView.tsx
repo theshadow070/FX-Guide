@@ -9,8 +9,12 @@ import {
   Activity,
   BookOpen,
   ChevronRight,
-  X
+  X,
+  AlertOctagon,
+  FileCheck
 } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
+import { soundManager } from '../utils/sounds';
 
 interface HomeViewProps {
   onOpenSettings?: () => void;
@@ -22,7 +26,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
     setActiveTab,
     mastered,
     setSearchQuery,
-    setSelectedCategory
+    setSelectedCategory,
+    openErrorDecoder,
+    openSurvivalMemo
   } = useApp();
 
   const [inputVal, setInputVal] = useState('');
@@ -41,6 +47,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
   };
 
   const handleOpenProcedure = (id: string) => {
+    triggerHaptic('light');
+    soundManager.playTap();
     const item = FX991ES_DATABASE.find(f => f.id === id);
     if (item) {
       openFunctionDetail(item);
@@ -93,7 +101,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
       </div>
 
       {/* 2. Champ de recherche conforme à la maquette */}
-      <form onSubmit={handleSearchSubmit} className="relative">
+      <form onSubmit={handleSearchSubmit} className="relative" data-tour="search-bar">
         <label htmlFor="home-search" className="sr-only">
           Que veux-tu faire ?
         </label>
@@ -127,7 +135,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
       </form>
 
       {/* 3. Carte Héro « TON GUIDE fx-991ES » conforme à la maquette */}
-      <div className="bg-[#123C2A] dark:bg-[#143527] border border-[#1D4E38] dark:border-[#214937] rounded-3xl p-5 space-y-4 shadow-sm text-white">
+      <div data-tour="hero-card" className="bg-[#123C2A] dark:bg-[#143527] border border-[#1D4E38] dark:border-[#214937] rounded-3xl p-5 space-y-4 shadow-sm text-white">
         {/* Ligne haute de la carte : puce + texte et badge onde */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -203,6 +211,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
         <div className="grid grid-cols-2 gap-2.5">
           {/* Carte 1 : Résoudre une équation du 2ᵉ degré (avec icône ÷) */}
           <button
+            data-tour="quick-card-eqn"
             onClick={() => handleOpenProcedure('eqn-second-degre')}
             className="p-3.5 text-left bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl flex flex-col justify-between min-h-[114px] hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] active:scale-[0.98] transition-all shadow-xs"
           >
@@ -253,6 +262,60 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
             </div>
           </button>
         </div>
+      </div>
+
+      {/* 4.bis Outils Stratégiques Casio (Épurés, accessibles sans surcharge) */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <button
+          data-tour="sos-button"
+          onClick={() => {
+            triggerHaptic('medium');
+            openErrorDecoder();
+          }}
+          className="p-3 text-left bg-gradient-to-br from-white to-[#FEF2F2]/60 dark:from-[#142920] dark:to-[#2B1B1B]/40 border border-[#FCA5A5]/60 dark:border-[#7F1D1D]/60 rounded-2xl flex flex-col justify-between min-h-[96px] hover:border-[#EF4444] active:scale-[0.98] transition-all shadow-xs group"
+        >
+          <div className="flex items-center justify-between w-full">
+            <div className="w-7 h-7 rounded-xl bg-[#FEE2E2] dark:bg-[#7F1D1D]/40 text-[#DC2626] dark:text-[#F87171] flex items-center justify-center">
+              <AlertOctagon className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-mono font-bold text-[#DC2626] dark:text-[#F87171] uppercase tracking-wider">
+              SOS
+            </span>
+          </div>
+          <div className="pt-2">
+            <div className="text-xs font-bold text-[#123C2A] dark:text-white leading-tight group-hover:text-[#DC2626] transition-colors">
+              Décodeur d'Erreurs
+            </div>
+            <div className="text-[10px] text-[#7A8C82] dark:text-[#8EA397] mt-0.5">
+              Syntax / Math ERROR
+            </div>
+          </div>
+        </button>
+
+        <button
+          onClick={() => {
+            triggerHaptic('medium');
+            openSurvivalMemo();
+          }}
+          className="p-3 text-left bg-gradient-to-br from-white to-[#F0FDF4]/60 dark:from-[#142920] dark:to-[#122A1E]/40 border border-[#86EFAC]/60 dark:border-[#1E4D35]/60 rounded-2xl flex flex-col justify-between min-h-[96px] hover:border-[#22C55E] active:scale-[0.98] transition-all shadow-xs group"
+        >
+          <div className="flex items-center justify-between w-full">
+            <div className="w-7 h-7 rounded-xl bg-[#DCFCE7] dark:bg-[#064E3B] text-[#15803D] dark:text-[#58D68D] flex items-center justify-center">
+              <FileCheck className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-mono font-bold text-[#15803D] dark:text-[#58D68D] uppercase tracking-wider">
+              A4
+            </span>
+          </div>
+          <div className="pt-2">
+            <div className="text-xs font-bold text-[#123C2A] dark:text-white leading-tight group-hover:text-[#15803D] transition-colors">
+              Mémo de Survie
+            </div>
+            <div className="text-[10px] text-[#7A8C82] dark:text-[#8EA397] mt-0.5">
+              10 réflexes du Jour J
+            </div>
+          </div>
+        </button>
       </div>
 
       {/* 5. Section « Repères sur le clavier » (Intégrée harmonieusement à l'accueil) */}

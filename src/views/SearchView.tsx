@@ -2,10 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { FX991ES_DATABASE } from '../data/fx991esDatabase';
 import { FunctionCategory } from '../types';
-import { Search, X, Zap, ArrowUpRight, Clock } from 'lucide-react';
+import { Search, X, Zap, ArrowUpRight, Clock, AlertOctagon } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
+import { soundManager } from '../utils/sounds';
 
 export const SearchView: React.FC = () => {
-  const { searchQuery, setSearchQuery, openFunctionDetail } = useApp();
+  const { searchQuery, setSearchQuery, openFunctionDetail, openErrorDecoder } = useApp();
   const [localQuery, setLocalQuery] = useState(searchQuery || '');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<FunctionCategory | 'all'>('all');
 
@@ -268,6 +270,32 @@ export const SearchView: React.FC = () => {
             </div>
           </div>
 
+          {/* Décodeur d'Erreurs Casio - Accès Rapide & Intelligent */}
+          <div
+            onClick={() => {
+              triggerHaptic('medium');
+              openErrorDecoder();
+            }}
+            className="p-3.5 bg-gradient-to-r from-[#FEF2F2] to-white dark:from-[#2B1B1B]/40 dark:to-[#132B22] border border-[#FCA5A5]/70 dark:border-[#7F1D1D]/70 rounded-2xl flex items-center justify-between cursor-pointer hover:border-[#EF4444] active:scale-[0.99] transition-all shadow-xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-[#FEE2E2] dark:bg-[#7F1D1D]/50 text-[#DC2626] dark:text-[#F87171] flex items-center justify-center shrink-0">
+                <AlertOctagon className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-[#123C2A] dark:text-white leading-tight">
+                  Blocage ou message d'erreur Casio ?
+                </div>
+                <div className="text-[11px] text-[#7A8C82] dark:text-[#8EA397] mt-0.5">
+                  Résoudre Syntax ERROR, Math ERROR... sans tout perdre
+                </div>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-[#DC2626] dark:text-[#F87171] font-mono px-2 py-1 rounded-lg bg-white dark:bg-[#1A2C22] border border-[#FCA5A5]/60 dark:border-[#7F1D1D]/60 shrink-0">
+              SOS ↗
+            </span>
+          </div>
+
           {/* Section « Recherches récentes » (Persistée localement - 5 dernières requêtes sous les suggestions) */}
           {recentSearches.length > 0 && (
             <div className="space-y-2.5 animate-in fade-in duration-150">
@@ -386,6 +414,8 @@ export const SearchView: React.FC = () => {
                 <div
                   key={item.id}
                   onClick={() => {
+                    triggerHaptic('light');
+                    soundManager.playTap();
                     if (localQuery.trim().length > 1) {
                       addRecentSearch(localQuery.trim());
                     }

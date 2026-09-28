@@ -1,6 +1,8 @@
 import React from 'react';
 import { useApp, AppTab } from '../context/AppContext';
 import { Home, LayoutGrid, Search, Heart } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
+import { soundManager } from '../utils/sounds';
 
 export const BottomTabBar: React.FC = () => {
   const { activeTab, setActiveTab } = useApp();
@@ -11,6 +13,17 @@ export const BottomTabBar: React.FC = () => {
     { id: 'search', label: 'Recherche', icon: <Search className="w-5 h-5" /> },
     { id: 'favorites', label: 'Favoris', icon: <Heart className="w-5 h-5" /> }
   ];
+
+  const handleTabClick = (tabId: AppTab) => {
+    triggerHaptic('selection');
+    soundManager.playTap();
+    setActiveTab(tabId);
+    // Automatically scrolls the viewport to the top on tab selection
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   return (
     <nav
@@ -23,7 +36,7 @@ export const BottomTabBar: React.FC = () => {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               className={`relative flex flex-col items-center justify-center h-full min-h-[44px] min-w-[44px] py-1 transition-colors select-none active:scale-95 ${
                 isActive
                   ? 'text-[#123C2A] dark:text-[#57B88A]'
@@ -45,4 +58,3 @@ export const BottomTabBar: React.FC = () => {
     </nav>
   );
 };
-

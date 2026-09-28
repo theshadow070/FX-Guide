@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { FX991ES_DATABASE } from '../data/fx991esDatabase';
 import { ArrowLeft, TrendingUp, Clock, ChevronRight } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
+import { soundManager } from '../utils/sounds';
 
 export const ProgressView: React.FC = () => {
   const { setActiveTab, mastered, history, openFunctionDetail } = useApp();
@@ -13,12 +15,43 @@ export const ProgressView: React.FC = () => {
     .map(id => FX991ES_DATABASE.find(item => item.id === id))
     .filter((item): item is (typeof FX991ES_DATABASE)[0] => item !== undefined);
 
+  // iOS-style edge swipe to go back to home
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const diffX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const diffY = e.changedTouches[0].clientY - touchStartYRef.current;
+
+    if (diffX > 75 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      triggerHaptic('light');
+      soundManager.playTap();
+      setActiveTab('home');
+    }
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
+
   return (
-    <div className="space-y-6 pb-20">
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="space-y-6 pb-20 select-none animate-in fade-in duration-150"
+    >
       {/* Header avec retour */}
       <div className="flex items-center gap-3 pt-1">
         <button
-          onClick={() => setActiveTab('home')}
+          onClick={() => {
+            triggerHaptic('light');
+            soundManager.playTap();
+            setActiveTab('home');
+          }}
           aria-label="Retour à l'accueil"
           className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-white hover:bg-[#EEF4F0] dark:hover:bg-[#1A3429] active:scale-95 transition-all shadow-xs"
         >
@@ -90,7 +123,11 @@ export const ProgressView: React.FC = () => {
             {historyItems.slice(0, 4).map(item => (
               <button
                 key={item.id}
-                onClick={() => openFunctionDetail(item)}
+                onClick={() => {
+                  triggerHaptic('light');
+                  soundManager.playTap();
+                  openFunctionDetail(item);
+                }}
                 className="w-full p-3 bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-xl flex items-center justify-between text-left hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] active:scale-[0.99] transition-all shadow-xs"
               >
                 <div>
