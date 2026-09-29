@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
-import { AppProvider, useApp } from './context/AppContext';
+import React, { useState, useEffect, useRef } from 'react';
+import { AppProvider, useApp, AppTab } from './context/AppContext';
 import { Header } from './components/Header';
 import { BottomTabBar } from './components/BottomTabBar';
 import { FunctionDetailModal } from './components/FunctionDetailModal';
@@ -12,6 +12,8 @@ import { ErrorDecoderModal } from './components/ErrorDecoderModal';
 import { SurvivalMemoModal } from './components/SurvivalMemoModal';
 import { GuidedTourOverlay } from './components/GuidedTourOverlay';
 import { SettingsModal } from './views/SettingsModal';
+import { triggerHaptic } from './utils/haptics';
+import { soundManager } from './utils/sounds';
 
 import { HomeView } from './views/HomeView';
 import { ExplorerView } from './views/ExplorerView';
@@ -22,9 +24,12 @@ import { KeypadView } from './views/KeypadView';
 import { FavoritesHistoryView } from './views/FavoritesHistoryView';
 import { DiscoverView } from './views/DiscoverView';
 
+const MAIN_TABS: AppTab[] = ['home', 'explorer', 'search', 'favorites'];
+
 const AppContent: React.FC = () => {
   const {
     activeTab,
+    setActiveTab,
     selectedFunction,
     closeFunctionDetail,
     textSize,
@@ -36,6 +41,52 @@ const AppContent: React.FC = () => {
   } = useApp();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+
+  // Swipe navigation between main tabs & back from subviews
+  const mainTouchStartX = useRef<number | null>(null);
+  const mainTouchStartY = useRef<number | null>(null);
+
+  const handleMainTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('input') || target?.closest('textarea') || target?.closest('.no-swipe')) {
+      return;
+    }
+    mainTouchStartX.current = e.touches[0].clientX;
+    mainTouchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleMainTouchEnd = (e: React.TouchEvent) => {
+    if (mainTouchStartX.current === null || mainTouchStartY.current === null) return;
+    const diffX = e.changedTouches[0].clientX - mainTouchStartX.current;
+    const diffY = e.changedTouches[0].clientY - mainTouchStartY.current;
+
+    if (Math.abs(diffX) > 75 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      if (MAIN_TABS.includes(activeTab)) {
+        const curIdx = MAIN_TABS.indexOf(activeTab);
+        if (diffX < 0 && curIdx < MAIN_TABS.length - 1) {
+          triggerHaptic('selection');
+          soundManager.playSectionTap();
+          setActiveTab(MAIN_TABS[curIdx + 1]);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (diffX > 0 && curIdx > 0) {
+          triggerHaptic('selection');
+          soundManager.playSectionTap();
+          setActiveTab(MAIN_TABS[curIdx - 1]);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else {
+        if (diffX > 75) {
+          triggerHaptic('light');
+          soundManager.playModalClose();
+          setActiveTab('home');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    }
+    mainTouchStartX.current = null;
+    mainTouchStartY.current = null;
+  };
 
   // Check if first-time user to display onboarding
   useEffect(() => {
@@ -50,14 +101,27 @@ const AppContent: React.FC = () => {
     setIsOnboardingOpen(false);
   };
 
-  // Home, Progress, Keypad, Explorer, Search and Favorites views have their own built-in headers as shown in mockups
+  const handleReplayTour = () => {
+    closeFunctionDetail();
+    closeErrorDecoder();
+    closeSurvivalMemo();
+    setActiveTab('home');
+    setIsSettingsOpen(false);
+    setTimeout(() => {
+      setIsOnboardingOpen(true);
+    }, 50);
+  };
+
+  // All views have their own dedicated headers matching their specific back/action needs
   const showGlobalHeader =
     activeTab !== 'home' &&
     activeTab !== 'progress' &&
     activeTab !== 'keypad' &&
     activeTab !== 'explorer' &&
     activeTab !== 'search' &&
-    activeTab !== 'favorites';
+    activeTab !== 'favorites' &&
+    activeTab !== 'curriculum' &&
+    activeTab !== 'discover';
 
   return (
     <div
@@ -71,7 +135,11 @@ const AppContent: React.FC = () => {
       )}
 
       {/* Main View Container (Optimized for iPhone / Mobile viewport, centered on larger screens) */}
-      <main className="max-w-md mx-auto px-4 pt-4 pb-20">
+      <main
+        onTouchStart={handleMainTouchStart}
+        onTouchEnd={handleMainTouchEnd}
+        className="max-w-md mx-auto px-4 pt-4 pb-20 select-none"
+      >
         {activeTab === 'home' && (
           <HomeView onOpenSettings={() => setIsSettingsOpen(true)} />
         )}
@@ -116,7 +184,7 @@ const AppContent: React.FC = () => {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        onReplayTour={() => setIsOnboardingOpen(true)}
+        onReplayTour={handleReplayTour}
       />
     </div>
   );

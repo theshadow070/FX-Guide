@@ -74,7 +74,11 @@ export const ExplorerView: React.FC = () => {
 
         {/* Bouton d'action carré arrondi avec icône grille à 4 carrés qui ouvre "Les touches" */}
         <button
-          onClick={() => setActiveTab('keypad')}
+          onClick={() => {
+            triggerHaptic('light');
+            soundManager.playSectionTap();
+            setActiveTab('keypad');
+          }}
           aria-label="Repérer les touches de la calculatrice"
           className="w-10 h-10 rounded-xl bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-[#58D68D] hover:bg-[#EEF4F0] dark:hover:bg-[#193A2E] active:scale-95 transition-all shadow-xs shrink-0"
         >
@@ -106,7 +110,7 @@ export const ExplorerView: React.FC = () => {
                 key={cat.id}
                 onClick={() => {
                   triggerHaptic('selection');
-                  soundManager.playTap();
+                  soundManager.playOptionToggle(true);
                   setSelectedCategory(cat.id);
                 }}
                 className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${
@@ -140,7 +144,7 @@ export const ExplorerView: React.FC = () => {
               key={item.id}
               onClick={() => {
                 triggerHaptic('light');
-                soundManager.playTap();
+                soundManager.playCardOpen();
                 openFunctionDetail(item);
               }}
               className="bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl p-4 space-y-2.5 shadow-xs hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] transition-colors cursor-pointer text-left active:scale-[0.99] group"

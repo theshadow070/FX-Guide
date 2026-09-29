@@ -1,25 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { HIDDEN_GEMS_DATABASE, CASIO_ERRORS_DATABASE } from '../data/errorsAndTips';
 import { KeyBadge } from '../components/KeyBadge';
 import { LcdScreen } from '../components/LcdScreen';
+import { useApp } from '../context/AppContext';
 import { triggerHaptic } from '../utils/haptics';
 import { soundManager } from '../utils/sounds';
-import { Zap, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Zap, AlertTriangle, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
 
 export const DiscoverView: React.FC = () => {
+  const { setActiveTab: setAppActiveTab } = useApp();
   const [activeTab, setActiveTab] = useState<'gems' | 'errors'>('gems');
   const [expandedError, setExpandedError] = useState<string>(CASIO_ERRORS_DATABASE[0].nom);
 
+  // iOS-style swipe to go back
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const diffX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const diffY = e.changedTouches[0].clientY - touchStartYRef.current;
+
+    if (diffX > 75 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      triggerHaptic('light');
+      soundManager.playModalClose();
+      setAppActiveTab('home');
+    }
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
+
   return (
-    <div className="space-y-4 pb-20 select-none animate-in fade-in duration-150">
-      {/* Title */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-[#173126] dark:text-white">
-          Astuces secrètes & Guide des erreurs
-        </h1>
-        <p className="text-xs text-[#63736B] dark:text-[#8EA397] mt-0.5">
-          Découvre les fonctions cachées et résous immédiatement les messages d’erreur Casio.
-        </p>
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="space-y-4 pb-20 select-none animate-in fade-in duration-150"
+    >
+      {/* Header avec Retour */}
+      <div className="flex items-center gap-3 pt-1">
+        <button
+          onClick={() => {
+            triggerHaptic('light');
+            soundManager.playModalClose();
+            setAppActiveTab('home');
+          }}
+          aria-label="Retour à l'accueil"
+          className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-white hover:bg-[#EEF4F0] dark:hover:bg-[#1A3429] active:scale-95 transition-all shadow-xs shrink-0"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-[#173126] dark:text-white">
+            Astuces & Guide des erreurs
+          </h1>
+          <p className="text-xs text-[#63736B] dark:text-[#8EA397] mt-0.5">
+            Fonctions cachées et solutions aux blocages Casio.
+          </p>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -27,7 +70,7 @@ export const DiscoverView: React.FC = () => {
         <button
           onClick={() => {
             triggerHaptic('selection');
-            soundManager.playTap();
+            soundManager.playOptionToggle(true);
             setActiveTab('gems');
           }}
           className={`flex-1 py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${
@@ -42,7 +85,7 @@ export const DiscoverView: React.FC = () => {
         <button
           onClick={() => {
             triggerHaptic('selection');
-            soundManager.playTap();
+            soundManager.playOptionToggle(true);
             setActiveTab('errors');
           }}
           className={`flex-1 py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${
@@ -115,7 +158,7 @@ export const DiscoverView: React.FC = () => {
                 <div
                   onClick={() => {
                     triggerHaptic('light');
-                    soundManager.playTap();
+                    soundManager.playOptionToggle(expandedError !== err.nom);
                     setExpandedError(prev => (prev === err.nom ? '' : err.nom));
                   }}
                   className="p-4 flex items-center justify-between cursor-pointer hover:bg-[#F7F8F4] dark:hover:bg-[#18362B] transition-colors"

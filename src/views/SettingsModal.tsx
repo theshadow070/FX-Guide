@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { BookOpen, ExternalLink, Minus, Plus, X, Volume2, VolumeX, Smartphone } from 'lucide-react';
+import { BookOpen, ExternalLink, Minus, Plus, X, Volume2, VolumeX, Smartphone, ChevronRight } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptics';
 import { soundManager } from '../utils/sounds';
 
@@ -22,20 +22,55 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
     setHapticState
   } = useApp();
 
+  // iOS-style swipe to dismiss Settings (swipe right from left edge or anywhere)
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
   if (!isOpen) return null;
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const diffX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const diffY = e.changedTouches[0].clientY - touchStartYRef.current;
+
+    // Detect horizontal swipe from left to right (>= 70px)
+    if (diffX > 70 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+      triggerHaptic('light');
+      soundManager.playModalClose();
+      onClose();
+    }
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#F7F8F4] dark:bg-[#0C1813] text-[#123C2A] dark:text-[#F1F5F2] animate-in fade-in duration-150 transition-colors">
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#F7F8F4] dark:bg-[#0C1813] text-[#123C2A] dark:text-[#F1F5F2] animate-in fade-in slide-in-from-right duration-200 transition-colors select-none"
+    >
       <div className="max-w-md mx-auto min-h-screen px-4 pt-12 pb-10 flex flex-col justify-between">
         <div className="space-y-6">
-          {/* Header avec bouton fermer discret */}
+          {/* Header avec bouton fermer & indication de geste */}
           <div className="flex items-center justify-between pb-1">
-            <span className="text-xs font-mono uppercase tracking-wider text-[#5A7365] dark:text-[#8EA397]">
-              Paramètres
-            </span>
+            <div>
+              <span className="text-xs font-mono uppercase tracking-wider text-[#5A7365] dark:text-[#8EA397]">
+                Configuration
+              </span>
+              <h1 className="text-xl font-extrabold text-[#123C2A] dark:text-white tracking-tight">
+                Paramètres
+              </h1>
+            </div>
+
             <button
               onClick={() => {
                 triggerHaptic('light');
+                soundManager.playModalClose();
                 onClose();
               }}
               aria-label="Fermer les paramètres"
@@ -43,6 +78,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+
+          {/* Indication visuelle de balayage */}
+          <div className="text-[11px] font-medium text-[#7A8C82] dark:text-[#6C8377] flex items-center gap-1.5 px-0.5">
+            <span>💡 Glisse ton doigt vers la droite pour fermer</span>
           </div>
 
           {/* 1. Carte Thème et Taille du texte */}
@@ -64,7 +104,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                       key={t.id}
                       onClick={() => {
                         triggerHaptic('selection');
-                        soundManager.playTap();
+                        soundManager.playOptionToggle(true);
                         setTheme(t.id as any);
                       }}
                       className={`h-10 rounded-xl text-xs font-semibold flex items-center justify-center transition-all active:scale-95 ${
@@ -95,7 +135,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <button
                   onClick={() => {
                     triggerHaptic('light');
-                    soundManager.playTap();
+                    soundManager.playOptionToggle(false);
                     setTextSize('normal');
                   }}
                   aria-label="Réduire la taille du texte"
@@ -110,7 +150,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <button
                   onClick={() => {
                     triggerHaptic('light');
-                    soundManager.playTap();
+                    soundManager.playOptionToggle(true);
                     setTextSize('large');
                   }}
                   aria-label="Augmenter la taille du texte"
@@ -153,7 +193,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   onClick={() => {
                     const next = !soundEnabled;
                     setSoundEnabled(next);
-                    if (next) soundManager.playTap();
+                    if (next) soundManager.playOptionToggle(true);
                     triggerHaptic('selection');
                   }}
                   className={`w-12 h-7 rounded-full p-1 transition-colors ${
@@ -188,6 +228,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   onClick={() => {
                     const next = !hapticEnabled;
                     setHapticState(next);
+                    soundManager.playOptionToggle(next);
                     if (next) triggerHaptic('medium');
                   }}
                   className={`w-12 h-7 rounded-full p-1 transition-colors ${
@@ -204,7 +245,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             </div>
           </div>
 
-          {/* 3. Section Outils */}
+          {/* 3. Section Outils & Visite */}
           <div className="space-y-2.5">
             <h2 className="text-base font-bold text-[#123C2A] dark:text-white px-0.5">
               Outils & Visite
@@ -214,8 +255,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
               {onReplayTour && (
                 <button
                   onClick={() => {
-                    triggerHaptic('light');
-                    soundManager.playTap();
+                    triggerHaptic('medium');
+                    soundManager.playSectionTap();
                     onClose();
                     onReplayTour();
                   }}
@@ -230,7 +271,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                         <span>Revoir la visite guidée</span>
                       </div>
                       <div className="text-xs text-[#5A7365] dark:text-[#8EA397]">
-                        Relancer le tutoriel interactif à travers l'application
+                        Réinitialiser et relancer le tutoriel pas à pas
                       </div>
                     </div>
                   </div>
@@ -244,6 +285,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 href="https://support.casio.com/pdf/004/fx-115ES_991ES_Eng.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => {
+                  soundManager.playTap();
+                }}
                 className="w-full p-3.5 flex items-center justify-between text-left hover:bg-[#F7F8F4] dark:hover:bg-[#183428] active:bg-[#EEF4F0] dark:active:bg-[#1C3B2E] transition-colors group"
               >
                 <div className="flex items-center gap-3">

@@ -18,7 +18,7 @@ export const FunctionCard: React.FC<FunctionCardProps> = ({ item, onClick }) => 
 
   const handleCardClick = () => {
     triggerHaptic('light');
-    soundManager.playTap();
+    soundManager.playCardOpen();
     onClick();
   };
 

@@ -45,9 +45,29 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const safeGetItem = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const safeSetItem = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+};
+
+const safeRemoveItem = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+  } catch {}
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
-    return (localStorage.getItem('fxguide_theme') as 'light' | 'dark' | 'system') || 'light';
+    return (safeGetItem('fxguide_theme') as 'light' | 'dark' | 'system') || 'light';
   });
 
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
@@ -71,7 +91,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem('fxguide_favorites');
+      const stored = safeGetItem('fxguide_favorites');
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -80,7 +100,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [history, setHistory] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem('fxguide_history');
+      const stored = safeGetItem('fxguide_history');
       return stored ? JSON.parse(stored) : ['eqn-second-degre', 'mode-table-valeurs'];
     } catch {
       return ['eqn-second-degre', 'mode-table-valeurs'];
@@ -89,7 +109,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [mastered, setMastered] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem('fxguide_mastered');
+      const stored = safeGetItem('fxguide_mastered');
       return stored ? JSON.parse(stored) : ['fractions-puissances-sd'];
     } catch {
       return ['fractions-puissances-sd'];
@@ -97,7 +117,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [textSize, setTextSize] = useState<'normal' | 'large'>(() => {
-    return (localStorage.getItem('fxguide_text_size') as 'normal' | 'large') || 'normal';
+    return (safeGetItem('fxguide_text_size') as 'normal' | 'large') || 'normal';
   });
 
   const [isErrorDecoderOpen, setIsErrorDecoderOpen] = useState(false);
@@ -141,7 +161,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setTheme = (newTheme: 'light' | 'dark' | 'system') => {
     setThemeState(newTheme);
-    localStorage.setItem('fxguide_theme', newTheme);
+    safeSetItem('fxguide_theme', newTheme);
   };
 
   const toggleFavorite = (id: string) => {
@@ -149,7 +169,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const isAdding = !prev.includes(id);
       soundManager.playFavorite(isAdding);
       const updated = prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id];
-      localStorage.setItem('fxguide_favorites', JSON.stringify(updated));
+      safeSetItem('fxguide_favorites', JSON.stringify(updated));
       return updated;
     });
   };
@@ -160,14 +180,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setHistory(prev => {
       const filtered = prev.filter(item => item !== id);
       const updated = [id, ...filtered].slice(0, 15);
-      localStorage.setItem('fxguide_history', JSON.stringify(updated));
+      safeSetItem('fxguide_history', JSON.stringify(updated));
       return updated;
     });
   };
 
   const clearHistory = () => {
     setHistory([]);
-    localStorage.removeItem('fxguide_history');
+    safeRemoveItem('fxguide_history');
   };
 
   const toggleMastered = (id: string) => {
@@ -177,7 +197,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         soundManager.playSuccess();
       }
       const updated = prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id];
-      localStorage.setItem('fxguide_mastered', JSON.stringify(updated));
+      safeSetItem('fxguide_mastered', JSON.stringify(updated));
       return updated;
     });
   };
@@ -195,16 +215,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const handleSetTextSize = (size: 'normal' | 'large') => {
     setTextSize(size);
-    localStorage.setItem('fxguide_text_size', size);
+    safeSetItem('fxguide_text_size', size);
   };
 
   const resetAllUserData = () => {
     setFavorites([]);
     setHistory([]);
     setMastered([]);
-    localStorage.removeItem('fxguide_favorites');
-    localStorage.removeItem('fxguide_history');
-    localStorage.removeItem('fxguide_mastered');
+    safeRemoveItem('fxguide_favorites');
+    safeRemoveItem('fxguide_history');
+    safeRemoveItem('fxguide_mastered');
   };
 
   return (

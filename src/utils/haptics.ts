@@ -5,14 +5,20 @@
 
 let hapticEnabled = true;
 if (typeof window !== 'undefined') {
-  const stored = localStorage.getItem('fxguide_haptic_enabled');
-  hapticEnabled = stored !== null ? stored === 'true' : true;
+  try {
+    const stored = localStorage.getItem('fxguide_haptic_enabled');
+    hapticEnabled = stored !== null ? stored === 'true' : true;
+  } catch {
+    hapticEnabled = true;
+  }
 }
 
 export const setHapticEnabled = (val: boolean) => {
   hapticEnabled = val;
   if (typeof window !== 'undefined') {
-    localStorage.setItem('fxguide_haptic_enabled', String(val));
+    try {
+      localStorage.setItem('fxguide_haptic_enabled', String(val));
+    } catch {}
   }
 };
 

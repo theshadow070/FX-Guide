@@ -49,7 +49,7 @@ export const ProgressView: React.FC = () => {
         <button
           onClick={() => {
             triggerHaptic('light');
-            soundManager.playTap();
+            soundManager.playModalClose();
             setActiveTab('home');
           }}
           aria-label="Retour à l'accueil"
@@ -125,7 +125,7 @@ export const ProgressView: React.FC = () => {
                 key={item.id}
                 onClick={() => {
                   triggerHaptic('light');
-                  soundManager.playTap();
+                  soundManager.playCardOpen();
                   openFunctionDetail(item);
                 }}
                 className="w-full p-3 bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-xl flex items-center justify-between text-left hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] active:scale-[0.99] transition-all shadow-xs"

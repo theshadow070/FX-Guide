@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { CURRICULUM_S2_TOPICS } from '../data/curriculumS2';
 import { FX991ES_DATABASE } from '../data/fx991esDatabase';
 import { useApp } from '../context/AppContext';
@@ -10,34 +10,73 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowRight,
+  ArrowLeft,
   Calculator
 } from 'lucide-react';
 
 export const CurriculumS2View: React.FC = () => {
-  const { openFunctionDetail } = useApp();
+  const { openFunctionDetail, setActiveTab } = useApp();
   const [expandedTopicId, setExpandedTopicId] = useState<string>(CURRICULUM_S2_TOPICS[0].id);
+
+  // iOS-style swipe to go back
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const diffX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const diffY = e.changedTouches[0].clientY - touchStartYRef.current;
+
+    if (diffX > 75 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      triggerHaptic('light');
+      soundManager.playModalClose();
+      setActiveTab('home');
+    }
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
 
   const toggleExpand = (id: string) => {
     triggerHaptic('light');
-    soundManager.playTap();
+    soundManager.playOptionToggle(expandedTopicId !== id);
     setExpandedTopicId(prev => (prev === id ? '' : id));
   };
 
   return (
-    <div className="space-y-4 pb-20 select-none animate-in fade-in duration-150">
-      {/* View Header */}
-      <div>
-        <div className="flex items-center gap-1.5 text-xs font-mono text-[#123C2A] dark:text-[#58D68D] font-semibold mb-1">
-          <span>Programme Officiel</span>
-          <span aria-hidden="true">·</span>
-          <span>Série Scientifique</span>
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="space-y-4 pb-20 select-none animate-in fade-in duration-150"
+    >
+      {/* View Header avec Retour */}
+      <div className="flex items-center gap-3 pt-1">
+        <button
+          onClick={() => {
+            triggerHaptic('light');
+            soundManager.playModalClose();
+            setActiveTab('home');
+          }}
+          aria-label="Retour à l'accueil"
+          className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-white hover:bg-[#EEF4F0] dark:hover:bg-[#1A3429] active:scale-95 transition-all shadow-xs shrink-0"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-mono text-[#123C2A] dark:text-[#58D68D] font-semibold">
+            <span>Programme Officiel</span>
+            <span aria-hidden="true">·</span>
+            <span>Série Scientifique</span>
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-[#173126] dark:text-white mt-0.5">
+            Première S2 — Méthodes & Rédaction
+          </h1>
         </div>
-        <h1 className="text-xl font-bold tracking-tight text-[#173126] dark:text-white">
-          Première S2 — Méthodes & Rédaction
-        </h1>
-        <p className="text-xs text-[#63736B] dark:text-[#8EA397] mt-0.5 leading-relaxed">
-          Comment utiliser ta fx-991ES efficacement sans jamais perdre de points de rédaction sur ta copie.
-        </p>
       </div>
 
       {/* Distinction Rule Card */}
@@ -156,7 +195,7 @@ export const CurriculumS2View: React.FC = () => {
                           key={fn.id}
                           onClick={() => {
                             triggerHaptic('light');
-                            soundManager.playTap();
+                            soundManager.playCardOpen();
                             openFunctionDetail(fn);
                           }}
                           className="w-full p-2.5 text-left bg-white dark:bg-[#142920] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-xl flex items-center justify-between hover:border-[#123C2A]/30 dark:hover:border-[#58D68D]/50 active:scale-[0.99] transition-all shadow-2xs"

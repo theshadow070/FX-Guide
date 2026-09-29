@@ -133,7 +133,7 @@ export const ErrorDecoderModal: React.FC<ErrorDecoderModalProps> = ({ isOpen, on
     // Detect intentional horizontal swipe from left to right
     if (diffX > 75 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
       triggerHaptic('light');
-      soundManager.playTap();
+      soundManager.playModalClose();
       onClose();
     }
     touchStartXRef.current = null;
@@ -151,7 +151,7 @@ export const ErrorDecoderModal: React.FC<ErrorDecoderModalProps> = ({ isOpen, on
         <button
           onClick={() => {
             triggerHaptic('light');
-            soundManager.playTap();
+            soundManager.playModalClose();
             onClose();
           }}
           className="flex items-center gap-1.5 -ml-2 px-2.5 py-1.5 rounded-xl text-[#123C2A] dark:text-[#6FAF82] hover:bg-[#EEF2ED] dark:hover:bg-[#1D3028] transition-colors active:scale-95"
@@ -182,7 +182,7 @@ export const ErrorDecoderModal: React.FC<ErrorDecoderModalProps> = ({ isOpen, on
               key={err.code}
               onClick={() => {
                 triggerHaptic('selection');
-                soundManager.playTap();
+                soundManager.playOptionToggle(true);
                 setSelectedErrorCode(err.code);
               }}
               className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium whitespace-nowrap transition-all select-none active:scale-95 ${

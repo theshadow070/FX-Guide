@@ -11,6 +11,13 @@ export const SearchView: React.FC = () => {
   const [localQuery, setLocalQuery] = useState(searchQuery || '');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<FunctionCategory | 'all'>('all');
 
+  // Keep local input in sync with context searchQuery
+  React.useEffect(() => {
+    if (searchQuery !== undefined) {
+      setLocalQuery(searchQuery);
+    }
+  }, [searchQuery]);
+
   // Recherches récentes persistées localement (jusqu'à 5 requêtes)
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
@@ -93,13 +100,14 @@ export const SearchView: React.FC = () => {
     { id: 'fractions_puissances', label: 'Fractions' }
   ];
 
-  // Normalisation du texte (minuscules, sans accents, tolérant au singulier/pluriel)
+  // Normalisation du texte (minuscules, sans accents, sans ponctuation parasite)
   const normalize = (str: string): string => {
     return str
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replace(/['’]/g, ' ')
+      .replace(/['’\-–—]/g, ' ')
+      .replace(/[.,\/#!$%\^&\*;:{}=\_`~()?[\]]/g, ' ')
       .trim();
   };
 
@@ -274,6 +282,7 @@ export const SearchView: React.FC = () => {
           <div
             onClick={() => {
               triggerHaptic('medium');
+              soundManager.playErrorAlert();
               openErrorDecoder();
             }}
             className="p-3.5 bg-gradient-to-r from-[#FEF2F2] to-white dark:from-[#2B1B1B]/40 dark:to-[#132B22] border border-[#FCA5A5]/70 dark:border-[#7F1D1D]/70 rounded-2xl flex items-center justify-between cursor-pointer hover:border-[#EF4444] active:scale-[0.99] transition-all shadow-xs"
@@ -415,7 +424,7 @@ export const SearchView: React.FC = () => {
                   key={item.id}
                   onClick={() => {
                     triggerHaptic('light');
-                    soundManager.playTap();
+                    soundManager.playCardOpen();
                     if (localQuery.trim().length > 1) {
                       addRecentSearch(localQuery.trim());
                     }

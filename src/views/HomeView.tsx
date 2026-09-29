@@ -48,7 +48,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
 
   const handleOpenProcedure = (id: string) => {
     triggerHaptic('light');
-    soundManager.playTap();
+    soundManager.playCardOpen();
     const item = FX991ES_DATABASE.find(f => f.id === id);
     if (item) {
       openFunctionDetail(item);
@@ -270,6 +270,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
           data-tour="sos-button"
           onClick={() => {
             triggerHaptic('medium');
+            soundManager.playErrorAlert();
             openErrorDecoder();
           }}
           className="p-3 text-left bg-gradient-to-br from-white to-[#FEF2F2]/60 dark:from-[#142920] dark:to-[#2B1B1B]/40 border border-[#FCA5A5]/60 dark:border-[#7F1D1D]/60 rounded-2xl flex flex-col justify-between min-h-[96px] hover:border-[#EF4444] active:scale-[0.98] transition-all shadow-xs group"
@@ -295,6 +296,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenSettings }) => {
         <button
           onClick={() => {
             triggerHaptic('medium');
+            soundManager.playSectionTap();
             openSurvivalMemo();
           }}
           className="p-3 text-left bg-gradient-to-br from-white to-[#F0FDF4]/60 dark:from-[#142920] dark:to-[#122A1E]/40 border border-[#86EFAC]/60 dark:border-[#1E4D35]/60 rounded-2xl flex flex-col justify-between min-h-[96px] hover:border-[#22C55E] active:scale-[0.98] transition-all shadow-xs group"

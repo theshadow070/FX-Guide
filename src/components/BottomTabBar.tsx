@@ -16,7 +16,7 @@ export const BottomTabBar: React.FC = () => {
 
   const handleTabClick = (tabId: AppTab) => {
     triggerHaptic('selection');
-    soundManager.playTap();
+    soundManager.playSectionTap();
     setActiveTab(tabId);
     // Automatically scrolls the viewport to the top on tab selection
     window.scrollTo({

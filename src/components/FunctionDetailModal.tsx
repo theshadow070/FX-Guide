@@ -133,7 +133,7 @@ export const FunctionDetailModal: React.FC<FunctionDetailModalProps> = ({
   // Toggle angle mode
   const handleToggleAngle = (mode: 'D' | 'R') => {
     triggerHaptic('selection');
-    soundManager.playTap();
+    soundManager.playAngleSwitch();
     setAngleMode(mode);
   };
 
@@ -458,9 +458,10 @@ export const FunctionDetailModal: React.FC<FunctionDetailModalProps> = ({
         <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#F7F8F4]/90 dark:bg-[#0E1914]/90 backdrop-blur-md border-b border-[#E2E8E3] dark:border-[#20362B] pt-safe shrink-0">
           
           <button
+            data-tour="back-btn"
             onClick={() => {
               triggerHaptic('light');
-              soundManager.playTap();
+              soundManager.playModalClose();
               onClose();
             }}
             className="flex items-center gap-1.5 -ml-2 px-2.5 py-1.5 rounded-xl text-[#123C2A] dark:text-[#6FAF82] hover:bg-[#EEF2ED] dark:hover:bg-[#1D3028] transition-colors active:scale-95"
@@ -520,11 +521,11 @@ export const FunctionDetailModal: React.FC<FunctionDetailModalProps> = ({
           </div>
 
           {/* Mode Switcher */}
-          <div className="flex p-1 bg-[#EEF2ED] dark:bg-[#1A2D23] rounded-2xl border border-[#E2E8E3] dark:border-[#264435]">
+          <div data-tour="mode-selector" className="flex p-1 bg-[#EEF2ED] dark:bg-[#1A2D23] rounded-2xl border border-[#E2E8E3] dark:border-[#264435]">
             <button
               onClick={() => {
                 triggerHaptic('selection');
-                soundManager.playTap();
+                soundManager.playOptionToggle(false);
                 setActiveMode('step');
               }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
@@ -540,7 +541,7 @@ export const FunctionDetailModal: React.FC<FunctionDetailModalProps> = ({
             <button
               onClick={() => {
                 triggerHaptic('medium');
-                soundManager.playTap();
+                soundManager.playOptionToggle(true);
                 setActiveMode('fast');
               }}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all bg-[#123C2A] text-white dark:bg-[#58D68D] dark:text-[#0C1813] shadow-xs active:scale-95"

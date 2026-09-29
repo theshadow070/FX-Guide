@@ -32,7 +32,7 @@ export const KeypadView: React.FC = () => {
 
     if (diffX > 75 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
       triggerHaptic('light');
-      soundManager.playTap();
+      soundManager.playModalClose();
       setActiveTab('explorer');
     }
     touchStartXRef.current = null;
@@ -97,29 +97,44 @@ export const KeypadView: React.FC = () => {
       onTouchEnd={handleTouchEnd}
       className="space-y-4 pb-24 animate-in fade-in duration-150 select-none"
     >
-      {/* A. Header avec Retour (Capture 2) */}
+      {/* A. Header avec Retour et Export */}
       <div className="space-y-3 pt-1">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                triggerHaptic('light');
+                soundManager.playModalClose();
+                setActiveTab('explorer');
+              }}
+              aria-label="Retour à l'explorateur"
+              className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-white hover:bg-[#EEF4F0] dark:hover:bg-[#193A2E] active:scale-95 transition-all shadow-xs shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+
+            <div>
+              <div className="text-[11px] font-mono tracking-wider uppercase text-[#7A8C82] dark:text-[#8EA397]">
+                REPÈRES SUR LE CLAVIER
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#123C2A] dark:text-white mt-0.5">
+                Les touches
+              </h1>
+            </div>
+          </div>
+
           <button
             onClick={() => {
               triggerHaptic('light');
-              soundManager.playTap();
-              setActiveTab('explorer');
+              soundManager.playSectionTap();
+              setIsExportModalOpen(true);
             }}
-            aria-label="Retour à l'explorateur"
-            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-white hover:bg-[#EEF4F0] dark:hover:bg-[#193A2E] active:scale-95 transition-all shadow-xs shrink-0"
+            aria-label="Exporter ou imprimer le mémo des touches"
+            title="Exporter / Imprimer"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] flex items-center justify-center text-[#123C2A] dark:text-[#58D68D] hover:bg-[#EEF4F0] dark:hover:bg-[#193A2E] active:scale-95 transition-all shadow-xs shrink-0"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <Download className="w-4 h-4" />
           </button>
-
-          <div>
-            <div className="text-[11px] font-mono tracking-wider uppercase text-[#7A8C82] dark:text-[#8EA397]">
-              REPÈRES SUR LE CLAVIER
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#123C2A] dark:text-white mt-0.5">
-              Les touches
-            </h1>
-          </div>
         </div>
 
         {/* Sous-titre exact de la Capture 2 */}

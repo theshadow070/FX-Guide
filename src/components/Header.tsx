@@ -13,7 +13,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
 
   const handleToggleTheme = () => {
     triggerHaptic('selection');
-    soundManager.playTap();
+    soundManager.playOptionToggle(true);
     if (theme === 'light') setTheme('dark');
     else if (theme === 'dark') setTheme('light');
     else setTheme(isDarkMode ? 'light' : 'dark');
@@ -21,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings }) => {
 
   const handleOpenSettingsClick = () => {
     triggerHaptic('light');
-    soundManager.playTap();
+    soundManager.playSectionTap();
     onOpenSettings();
   };
 

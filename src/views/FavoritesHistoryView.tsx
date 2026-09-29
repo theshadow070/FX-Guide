@@ -82,7 +82,11 @@ export const FavoritesHistoryView: React.FC = () => {
 
           {/* Bouton raccourci discret vers l'explorateur */}
           <button
-            onClick={() => setActiveTab('explorer')}
+            onClick={() => {
+              triggerHaptic('light');
+              soundManager.playSectionTap();
+              setActiveTab('explorer');
+            }}
             className="mt-2 px-4 py-2 rounded-xl bg-[#EEF4F0] dark:bg-[#193A2E] text-[#123C2A] dark:text-[#58D68D] text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-xs"
           >
             Explorer les procédures
@@ -105,7 +109,7 @@ export const FavoritesHistoryView: React.FC = () => {
                 key={item.id}
                 onClick={() => {
                   triggerHaptic('light');
-                  soundManager.playTap();
+                  soundManager.playCardOpen();
                   openFunctionDetail(item);
                 }}
                 className="bg-white dark:bg-[#132B22] border border-[#E2E8E3] dark:border-[#1F3C2F] rounded-2xl p-4 space-y-2.5 shadow-xs hover:border-[#123C2A]/30 dark:hover:border-[#2C5240] transition-colors cursor-pointer text-left active:scale-[0.99] group relative"
